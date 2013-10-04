@@ -168,7 +168,7 @@ So finally it was decided to make them Type Query Properties and the final inter
         	
         	// identifier of I'th enumerator in E
         	template<class E, size_t I>
-        	struct enumerator_identifier { constexpr char[] value; }
+        	struct enumerator_identifier { constexpr char value[]; }
         };
 
 By making the input template parameters we can allow implementations to implement them as instrinsics that access and return information directly from the internal compiler enumerator list during translation, as per other type property queries.  We added requirements that E be an enumeration type and I must be in-bounds.
