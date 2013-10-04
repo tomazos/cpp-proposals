@@ -1,0 +1,317 @@
+<html>
+<head>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+</head>
+<body>
+
+<p>Document number: Nnnnn=yy-nnnn (Not yet assigned)</p>
+
+<p>Date: 2013-10-03</p>
+
+<p>Project:    Programming Language C++, Library Working Group</p>
+
+<p>Reply-to: Andrew Tomazos <a href="&#x6d;&#x61;&#105;&#108;&#x74;&#x6f;&#58;&#97;&#x6e;&#x64;&#114;&#101;&#x77;&#116;&#111;&#x6d;&#x61;&#x7a;&#111;&#x73;&#x40;&#103;&#x6d;&#97;&#x69;&#108;&#x2e;&#x63;&#x6f;&#x6d;">&#x61;&#110;&#x64;&#x72;&#x65;&#119;&#x74;&#x6f;&#109;&#97;&#x7a;&#x6f;&#115;&#64;&#x67;&#109;&#97;&#x69;&#108;&#46;&#99;&#x6f;&#109;</a>, Cristian Kaeser <a href="&#x6d;&#x61;&#x69;&#x6c;&#116;&#111;&#58;&#99;&#x68;&#x72;&#x69;&#115;&#116;&#x69;&#x61;&#x6e;&#x6b;&#97;&#101;&#115;&#101;&#x72;&#56;&#x37;&#x40;&#x67;&#x6f;&#x6f;&#x67;&#108;&#x65;&#109;&#97;&#105;&#x6c;&#46;&#99;&#x6f;&#109;">&#x63;&#104;&#x72;&#x69;&#115;&#116;&#x69;&#97;&#110;&#x6b;&#97;&#101;&#x73;&#x65;&#114;&#56;&#55;&#x40;&#x67;&#x6f;&#111;&#103;&#108;&#101;&#109;&#97;&#x69;&#108;&#46;&#x63;&#x6f;&#x6d;</a></p>
+
+<h1>A Proposal to Add Enumeration Type Property Queries to the Standard Library</h1>
+
+<h2>Table of Contents</h2>
+
+<h2>Introduction</h2>
+
+<p>We propose to add three new Type Property Queries [meta.unary.prop.query] to the standard library as a first step to enabling library authors to build various higher-level reflection facilities for enumerators.  The queries provide compile-time access to the complete information about the enumerator list of a given enumeration - specifically how many there are, their declared order, and for each their value and identifier is.</p>
+
+<p>These three queries can then be used by library authors to build higher-level enumerator reflection features.  Acceptance of this proposal does not preclude future standardization of additional higher-level queries, either in stand-alone form or as part of a larger reflection initiative.</p>
+
+<h2>Motivation and Scope</h2>
+
+<p>Being able to inspect the enumerator list during translation is the missing common foundation in C++ of a large number of frequently asked for enumeration-related reflection facilities.</p>
+
+<p>Because implementations do not currently expose the basic information about an enumerator list, implementing such facilities in a standard-compliant manner is nearly impossible.  Current workarounds involve either:</p>
+
+<p>Hand-maintaining and keeping synchronized secondary entities (to the enum specifier):</p>
+
+<pre><code>enum foo
+{
+    bar,
+    baz,
+    qux,
+};
+
+size_t foo_enumerator_count = 3; // maintain me
+
+const char* foo_to_string(foo e) // maintain me too
+{
+    switch (e)
+    {
+    case bar: return "bar";
+    case baz: return "baz";
+    case qux: return "qux";
+    default: throw logic_error(...);
+    }
+}
+
+foo string_to_foo(const std::string&amp; e) // etc
+{
+    ...
+};
+</code></pre>
+
+<p>or, using the preprocessor:</p>
+
+<pre><code>BEGIN_DECL_ENUMERATION(foo)
+    DECL_ENUMERATOR(bar)
+    DECL_ENUMERATOR(baz)
+    DECL_ENUMERATOR(qux)
+END_DECL_ENUMERATION(foo)
+</code></pre>
+
+<p>and then processing this construct multiple times with different macro definitions (one for the enum specifier, then another for secondary entities).</p>
+
+<p>or, using a non-standard &ldquo;precompiler&rdquo; tool such as Qt moc to scan for the enum specifiers and then produce secondary automatically-generated translation units that are then used to implement the reflection facilities.</p>
+
+<p>These are all just hacks to get at information that the compiler has readily available during translation, but does not expose.  This proposal makes a first step to correct this situation.</p>
+
+<p>The intended user community of this proposal are the infrastructure-providers and framework-authors for almost every enumeration user.</p>
+
+<p>The use of the proposed features is intended, as for the other Type Property Queries, to support programmers that use metaprogramming and generic programming to form higher-level constructs at compile time.</p>
+
+<p>We have a complete reference implementation of the proposed feature.  It is extremely easy to implement, and for a basic implementation requires only implementing three compiler intrinsics that inspect the annotated AST of the enum specifier.  The interface is setup so that these intrinsics only need to be callable at compile-time when the properties are instantiated - and so implies no mandated run-time resources at all.  The compile-time cost is of course also zero if the properties are never instantiated.</p>
+
+<h2>Impact On the Standard</h2>
+
+<p>The proposed feature adds three Type Property Queries in the typical form.  It requires only some minimal compiler support to implement the three queries.</p>
+
+<p>No other standard library feature depends on it.</p>
+
+<p>For ease of use, <code>std::integer_sequence</code> is useful to be able to map the enumerator values and/or enumerator identifiers into a pack for futher processing.  As are other current and future metaprogramming techniques/facilties, such as those applicable to using <code>std::get&lt;i&gt;(tuple)</code> - such as future planned literal packs.  Ease of use of the interface will improve for Type Property Queries along with general improvements in C++ metaprogramming.</p>
+
+<p>As <code>std::enumerator_value</code> is an enumerator value of the enumeration type, it can be used in combination with the existing <code>std::underlying_type</code> if one wishes to convert it a value of the underlying type instead.</p>
+
+<h2>Design Decisions</h2>
+
+<h3>Design Goals</h3>
+
+<p>The interface should:</p>
+
+<ul>
+<li>be complete (provide <em>all</em> information about the enumerator list of <em>any</em> enumeration type)</li>
+<li>be minimal and low-level</li>
+<li>entail no run-time cost</li>
+<li>entail no compile-time cost if unused</li>
+<li>not mandate the form of a specific lookup algorithm or data structure</li>
+<li>be self-contained and free of dependencies</li>
+<li>be usable during translation</li>
+</ul>
+
+
+<h3>Design History</h3>
+
+<p>The proposal in its current form is the result of a merge of several separate proposals.</p>
+
+<p>The first was to add a core language feature that, given an enumeration type <code>enum E {a, b, c}</code>, a construct of the form <code>E...</code> would expand to a pack of the enumerator list of <code>E</code>, that being <code>a, b, c</code>.  This could be used in the usual contexts, <code>braced-init-list</code> contexts or as template or function arguments.  This was later improved by suggesting that instead a non-type parameter pack of type <code>E...</code> would match an argument of type <code>E</code>, and instead of being ill-formed, would expand to the enumerator list of <code>E</code>.  As such a pack can be formed using the proposed primitives, and as the proposed functions are more appropriate encapsulated as a library feature, it was decided that this proposal was superior as a small library addition rather than a core language change.</p>
+
+<p>The second was to add a predefined template variable, originally called <code>__enumerator__</code> in the spirit of <code>__func__</code>, but we&rsquo;ll call it <code>std::enumerator_value_to_identifer</code> for sake of discussion, that would return the identifier string of an enumerator based on its value.  Such a facility is trivially definable using a combination of the proposed queries.  There are several reasons it was not included in this proposal.  Consider the following enumeration types:</p>
+
+<pre><code>enum E1 { a, b, c };  // simple 0,1,2...n-1
+enum E2 { a = 42, b = 42, c = 43 }; // ambiguous values
+enum E3 { a = 42, b = 420000 }; // sparse values
+enum E4 { a = 1 &lt;&lt; 0, b = 1 &lt;&lt; 1, c = 1 &lt;&lt; 2 }; // bit sets
+enum E5 { a = 1 &lt;&lt; 0, b = 1 &lt;&lt; 1, c = 1 &lt;&lt; 2, m = 0b111 }; // masks
+</code></pre>
+
+<p>There is no single best approach that can be mandated.  What shall <code>std::enumerator_value_to_identifier(x)</code> return when x is ambiguous?  Shall it return the identifier of the first enumerator to have the value?  In what order?  Shall it return a delimited string concatenated with all the identifiers of equal value?  Again, in what order?  And how shall they be delimited? Shall it return an array or <code>std::set</code> of those of equal value instead?  Shall it fail at compile-time with an ambiguity?  Shall it have an interface like <code>std::multimap</code>?  What underlying data structure or algorithm should it use to do the lookup?  Should the case of an enumeration with contiguous enumerator values that start from zero be dealt with seperately from ones with sparse values?  What about enumerations that are used as bitsets?  What about enumerations without ambiguous enumerators at all?</p>
+
+<p>All the many alternative ways of answering these questions can all be built up from the proposed queries, as they provide the complete compile-time information about the enumerator list.  We note that acceptance of this proposal would not preclude future standardization of an additional facility such as <code>std::enumerator_value_to_identifier</code> if sufficiently general answers to these questions are later found.  As a first step we decided to move standardization of <code>std::enumerator_value_to_identifier</code> to a future proposal, so as not to unnecessarily delay standardization of the more general foundation primitives.</p>
+
+<p>The next proposal that was considered was creating a set of higher-level reflection facilities above the proposed primitives (and leave the primitives as an implementation detail) that would be fully integrated with other standard library facilities.  It was quickly realized that, as per <code>std::enumerator_value_to_identifier</code>, there are many different use cases and different application domains and tradeoffs.  So we decided to defer such higher-level facilities to a future proposal so as not to delay the urgently needed proposed queries.  We added the design goal for this proposal that the primitives should provide complete information, but should be minimal outside of that.</p>
+
+<p>We also realized that the declaration order of enumerators may be significant for some applications and so added this information for completeness to our interface.  All other orderings can be sorted from declaration order, but once declaration order is lost it cannot be recovered.</p>
+
+<p>The next key design decision was identifier representation.  As per [lex] an identifier is formed during translation phase 1 by mapping the source files in source encoding in an implementation-defined manner to ISO 10646 (Unicode) characters with the constraints given in [charname.allowed] and [charname.disallowed].  Characters outside the basic source character set are then logically encoded into univeral-character-name escape sequences.  For the remainder of translation identifiers remain in this form.  String literals have any universal-character-name escape sequences decoded during translation phase 5.  Depending on the string literal prefix a string literal is then encoded into one of five character encodings.  One of these is the implementation-defined execution character encoding, three are the standard Unicode character encodings UTF-8, UTF-16 and UTF-32, and the last is a direct encoding which is effectively equivalent to UTF-32.</p>
+
+<p>It was proposed to provide an interface that took as a template parameter which of the five character encodings were desired.  For minimality it was decided that such a facility should be defered for higher-level facilities and a single encoding would be provided, given that an encoded string in a constexpr array or string literal can be transcoded during translation to any other encoding anyway - so completeness remained intact.  Originally the single encoding that was considered was the implementation-defined execution encoding, but it was later realized that not all execution encodings can handle all characters (for example ASCII or Latin1), so this would violate the completeness requirement.  So it was decided to choose one of the Unicode encodings.  Implementations are already required to handle all of these, and all of them can encode all characters.  UTF-8 was selected because as an 8-bit encoding it is endianess-agnostic, unlike UTF-16 and UTF-32, and it is the most common execution encoding anyway.</p>
+
+<p>Because universal-character-names escape sequences in identifiers are not logically decoded in translation phase 5, it was noted that we should add this as an explicit requirement to the identifier encoding text.</p>
+
+<p>At this point we had the complete information we wanted to provide.  A list of enumerators, and for each its position in declared order, its value and its identifier encoded as described above.  The identifier should be encoded in an array of chars (UTF-8 code units) and null-terminated so that it may be used as a C string or to initialize a std::string, and that array must be defined with constexpr or be a string literal so that its elements are usable within a constant expression (such that an lvalue-to-rvalue conversion is allowed on them), so the string could be worked with during translation.</p>
+
+<p>The next step was how to expose that information from the compiler during translation.  For efficient mapping from the internal compiler representation it was decided that it should be represented as a sequence in declared order.  We then considered using an array to represent such a sequence:</p>
+
+<p>Either:</p>
+
+<pre><code>   enum E {a = 42, b = 42, c = 43};
+
+   constexpr E enumeration_values[] = {a, b, c};
+   constexpr const char* enumeration_identifiers[] = {u8"a", u8"b", u8"c"};
+</code></pre>
+
+<p>or</p>
+
+<pre><code>   struct enumerator_info
+   {
+       E value;
+       const char* identifier;
+   };
+
+   constexpr enumerator_info[] = { {a, u8"a"}, {b, u8"b"}, {c, u8"c"} };
+</code></pre>
+
+<p>But it was decided that certain uses of such an array could entail them to require static storage, and such use would mandate relocation of the array during load-time.</p>
+
+<p>What we really wanted was a way to expose pure compile-time accessors to the internal compiler data structure that holds the enumerator list, without providing a set data structure or algorithm - leaving this up to the library author, and for a later proposal for higher-level facilities.</p>
+
+<p>To avoid this it was then considered to use functions:</p>
+
+<pre><code>    constexpr size_t enumerator_count();
+    constexpr E enumerator_value(size_t index);
+    constexpr const char* enumerator_identifier(size_t index);
+</code></pre>
+
+<p>The functions could then be backed by intrinsics, but for the later two if the index was out-of-bounds for certain uses would mandate run-time error handling.</p>
+
+<p>So finally it was decided to make them Type Query Properties and the final interface was arrived at:</p>
+
+<pre><code>    namespace std
+    {
+        // number of enumerators in E
+        template&lt;class E&gt;
+        struct enumerator_count { constexpr size_t value; }
+
+        // value of I'th enumerator in E
+        template&lt;class E, size_t I&gt;
+        struct enumerator_value { constexpr E value; }
+
+        // identifier of I'th enumerator in E
+        template&lt;class E, size_t I&gt;
+        struct enumerator_identifier { constexpr char[] value; }
+    };
+</code></pre>
+
+<p>By making the input template parameters we can allow implementations to implement them as instrinsics that access and return information directly from the internal compiler enumerator list during translation, as per other type property queries.  We added requirements that E be an enumeration type and I must be in-bounds.</p>
+
+<h2>Technical Specifications</h2>
+
+<p>20.11.5 [meta.unary.prop.query] Type property queries</p>
+
+<ol>
+<li>This sub-clause contains templates that may be used to query properties of types at compile time.</li>
+</ol>
+
+
+<p>Add to Table 50 - Type property queries:</p>
+
+<pre><code> template&lt;class E&gt; struct enumerator_count;
+
+ An integer value representing the number of enumerators in E
+
+ Requires: std::is_enum&lt;E&gt; shall be true
+
+ --------------------------------------------
+
+ template&lt;class E, std::size_t I&gt; struct enumerator_value;
+
+ A value of type E that is the I'th enumerator of E in declared order,
+ where indexing of I is zero-based.
+
+ Requires: std::is_enum&lt;E&gt; shall be true
+ Requires: I shall be nonnegative and less than enumerator_count&lt;E&gt;
+
+ --------------------------------------------
+
+ template&lt;class E, std::size_t I&gt; struct enumerator_identifier;
+
+ A value of type array of char, defined with constexpr, representing
+ the identifier of the I'th enumerator of E in declared order, where
+ indexing of I is zero-based. The value shall be null-terminated,
+ UTF-8 encoded, and have any universal-character-names decoded.
+
+ Requires: std::is_enum&lt;E&gt; shall be true
+ Requires: I shall be nonnegative and less than enumerator_count&lt;E&gt;
+</code></pre>
+
+<p>Add new paragraph 4:</p>
+
+<pre><code> [Example:
+
+ // In the below π is in source encoding (before translation phase 1)
+ enum foo
+ {
+     bar,
+     Baz,
+     Qux = 42,
+     Quux = 42,
+     eπ = 96,
+     f\u03C0 = 300000
+ };
+
+ // the following assertions hold
+ static_assert(enumerator_count&lt;foo&gt;::value == 6);
+
+ static_assert(enumerator_value&lt;foo,0&gt;::value == Bar);
+ static_assert(enumerator_value&lt;foo,1&gt;::value == Baz);
+ static_assert(enumerator_value&lt;foo,2&gt;::value == Qux);
+ static_assert(enumerator_value&lt;foo,3&gt;::value == Quux);
+ static_assert(enumerator_value&lt;foo,4&gt;::value == eπ);
+ static_assert(enumerator_value&lt;foo,5&gt;::value == f\u03C0);
+
+ assert(std::strcmp(enumerator_identifier&lt;foo,0&gt;::value, u8"bar") == 0);
+ assert(std::strcmp(enumerator_identifier&lt;foo,1&gt;::value, u8"Baz") == 0);
+ assert(std::strcmp(enumerator_identifier&lt;foo,2&gt;::value, u8"Qux") == 0);
+ assert(std::strcmp(enumerator_identifier&lt;foo,3&gt;::value, u8"Quux") == 0);
+ assert(std::strcmp(enumerator_identifier&lt;foo,4&gt;::value, u8"eπ") == 0);
+ assert(std::strcmp(enumerator_identifier&lt;foo,5&gt;::value, u8"f\u03C0") == 0);
+
+ // universal character names handled correctly:
+ static_assert(enumerator_value&lt;foo,4&gt;::value == e\u03C0);
+ static_assert(enumerator_value&lt;foo,5&gt;::value == fπ);
+ assert(std::strcmp(enumerator_identifier&lt;foo,4&gt;::value, u8"e\u03C0") == 0);
+ assert(std::strcmp(enumerator_identifier&lt;foo,5&gt;::value, u8"fπ") == 0);
+
+ // constant lvalue-to-rvalue conversion on array elements ok:
+ constexpr const char* str = enumerator_identifier&lt;foo,0&gt;::value;
+ static_assert(str[0] == 'b');
+ static_assert(str[1] == 'a');
+ static_assert(str[2] == 'r');
+ static_assert(str[3] == '\0');
+
+ -- end example]
+</code></pre>
+
+<h2>Reference Implementation</h2>
+
+<p>Here is an the interface from our reference implementation:</p>
+
+<pre><code>template&lt;typename E&gt;
+struct enumerator_count // number of enumerators in E
+{
+    static_assert(std::is_enum&lt;E&gt;::value, "E not enum type");
+
+    static constexpr size_t value = __enumerator_count(E);
+};
+
+template&lt;typename E, std::size_t I&gt;
+struct enumerator_value
+{
+    static_assert(std::is_enum&lt;E&gt;::value, "E not enum type");
+    static_assert(0 &lt;= I &amp;&amp; I &lt; std::enumerator_count&lt;E&gt;::value, "I out-of-bounds");
+
+    static constexpr E value = __enumerator_value(E, I);
+};
+
+template&lt;typename E, std::size_t I&gt;
+struct enumerator_identifier {
+    static_assert(std::is_enum&lt;E&gt;::value, "E not enum type");
+    static_assert(0 &lt;= I &amp;&amp; I &lt; std::enumerator_count&lt;E&gt;::value, "I out-of-bounds");
+
+    static constexpr char[] value = __enumerator_identifier(E, I);
+};
+</code></pre>
+
+<p>As can be seen it is a thin wrapper for three compiler intrinsics that inspect the annotated AST of the enum specifier.  These are called during translation when the templates are instantiated.</p>
+
+<h2>Acknowledgements</h2>
+
+<p>We would like to thank David Krauss and Thiago Macieira for valuable initial feedback on this proposal.</p>
+</body>
+</html>
+
