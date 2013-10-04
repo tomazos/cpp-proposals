@@ -282,7 +282,7 @@ Here is an the interface from our reference implementation:
         static_assert(std::is_enum<E>::value, "E not enum type");
 		static_assert(0 <= I && I < std::enumerator_count<E>::value, "I out-of-bounds");
 
-        static constexpr char[] value = __enumerator_identifier(E, I);
+        static constexpr char value[] = __enumerator_identifier(E, I);
     };
 
 As can be seen it is a thin wrapper for three compiler intrinsics that inspect the annotated AST of the enum specifier.  These are called during translation when the templates are instantiated.
