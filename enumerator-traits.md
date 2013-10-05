@@ -6,94 +6,63 @@ Project: 	Programming Language C++, Library Working Group
 
 Reply-to: Andrew Tomazos <andrewtomazos@gmail.com>, Cristian Kaeser <christiankaeser87@googlemail.com>
 
-# A Proposal to Add Enumeration Type Property Queries to the Standard Library
+# Enumerator List Property Queries
 
 ## Table of Contents
 
+- Introduction
+- Motivation and Scope
+- Design Goals
+- Design Log
+- Technical Specifications
+- Reference Implementation
+- Acknowledgements
+
 ## Introduction
 
-We propose to add three new Type Property Queries [meta.unary.prop.query] to the standard library as a first step to enabling library authors to build various higher-level reflection facilities for enumerators.  The queries provide compile-time access to the complete information about the enumerator list of a given enumeration - specifically how many there are, their declared order, and for each their value and identifier is.
+An enumeration type is defined by an _enum-specifier_ that contains an _enumerator-list_.  We propose to add three additional Property Queries [meta.unary.prop.query] to the Metaprogramming and Type Traits Standard Library that provide compile-time access to _enumerator-list_.  Specifically the size of the _enumerator-list_, `std::enumerator_count<E>`, and for the `I`'th _enumerator_definition_ its value, `std::enumerator_value<E,I>`, and its identifier, `std::enumerator_identifier<E,I>`.
 
-These three queries can then be used by library authors to build higher-level enumerator reflection features.  Acceptance of this proposal does not preclude future standardization of additional higher-level queries, either in stand-alone form or as part of a larger reflection initiative.
+These urgently needed queries will enable metaprogrammers to implement higher-level facilities such as static checks and reflection.  Acceptance of this proposal does not preclude future standardization of higher-level facilities.
 
 ## Motivation and Scope
 
-Being able to inspect the enumerator list during translation is the missing common foundation in C++ of a large number of frequently asked for enumeration-related reflection facilities.
+Being able to inspect the _enumerator-list_ during translation is the missing common foundation in C++ of a large number of frequently-asked-for enumeration-related reflection facilities.
 
-Because implementations do not currently expose the basic information about an enumerator list, implementing such facilities in a standard-compliant manner is nearly impossible.  Current workarounds involve either:
+Because implementations do not currently expose this basic semantic information about an _enumerator-list_ to library authors, implementing such facilities in a standard-compliant manner is nearly impossible.  Current workarounds involve either:
 
-Hand-maintaining and keeping synchronized secondary entities (to the enum specifier):
+- Hand-maintaining and keeping synchronized secondary entities/lists for each _enum-specifier_.
+- Wrapping each _enum-specifier_ with macros and using obscene preprocessor tricks
+- Implementing a "precompiler" tool such as Qt moc to scan the source for enum specifiers and then automatically-generate additional translation units
 
-    enum foo
-    {
-        bar,
-        baz,
-        qux,
-    };
-    
-    size_t foo_enumerator_count = 3; // maintain me
-    
-    const char* foo_to_string(foo e) // maintain me too
-    {
-        switch (e)
-        {
-        case bar: return "bar";
-        case baz: return "baz";
-        case qux: return "qux";
-        default: throw logic_error(...);
-        }
-    }
-    
-    foo string_to_foo(const std::string& e) // etc
-    {
-        ...
-    };
-    
-or, using the preprocessor:
-
-    BEGIN_DECL_ENUMERATION(foo)
-        DECL_ENUMERATOR(bar)
-        DECL_ENUMERATOR(baz)
-        DECL_ENUMERATOR(qux)
-    END_DECL_ENUMERATION(foo)
-
-and then processing this construct multiple times with different macro definitions (one for the enum specifier, then another for secondary entities).
-
-or, using a non-standard "precompiler" tool such as Qt moc to scan for the enum specifiers and then produce secondary automatically-generated translation units that are then used to implement the reflection facilities.
-
-These are all just hacks to get at information that the compiler has readily available during translation, but does not expose.  This proposal makes a first step to correct this situation.
+These are all just workarounds to get at information that the compiler has readily available during translation, but does not expose.  This proposal corrects this.
 
 The intended user community of this proposal are the infrastructure-providers and framework-authors for almost every enumeration user.
 
-The use of the proposed features is intended, as for the other Type Property Queries, to support programmers that use metaprogramming and generic programming to form higher-level constructs at compile time.
+The use of the proposed feature is intended, as for existing Metaprogramming Property Queries, to support programmers that use metaprogramming and generic programming to form higher-level constructs at compile-time.
 
-We have a complete reference implementation of the proposed feature.  It is extremely easy to implement, and for a basic implementation requires only implementing three compiler intrinsics that inspect the annotated AST of the enum specifier.  The interface is setup so that these intrinsics only need to be callable at compile-time when the properties are instantiated - and so implies no mandated run-time resources at all.  The compile-time cost is of course also zero if the properties are never instantiated.
+We have a complete reference implementation of the proposed feature.  It is extremely easy to implement, and for a basic implementation requires only implementing three compiler intrinsics that inspect the annotated AST of the _enumerator-list_.  The interface is setup, as for existing meta property queries, so that these intrinsics only need to be callable at compile-time when the properties are instantiated - and so implies no mandated run-time resources at all.  The compile-time cost is of course also zero if the properties are never instantiated.
 
 ## Impact On the Standard
 
-The proposed feature adds three Type Property Queries in the typical form.  It requires only some minimal compiler support to implement the three queries.
+The proposed feature adds three Property Queries to the Metaprogramming and Type Traits library in the typical form.  It requires only some minimal compiler support to implement the three queries.
 
-No other standard library feature depends on it.
+As for all Property Queries in the Metaprogramming and Type Traits library, the proposed three Property Queries are for use by metaprogrammers at compile-time.  The current ease-of-use of these constructs is the same as, for example, `std:rank`, `std::extent` and `std::get(tuple)`.  As C++ continues to evolve more sophisticated metaprogramming features, the proposed queries will become easier to use along with them.
 
-For ease of use, `std::integer_sequence` is useful to be able to map the enumerator values and/or enumerator identifiers into a pack for futher processing.  As are other current and future metaprogramming techniques/facilties, such as those applicable to using `std::get<i>(tuple)` - such as future planned literal packs.  Ease of use of the interface will improve for Type Property Queries along with general improvements in C++ metaprogramming.
+As `std::enumerator_value<E,I>` is a value of enumeration type E, it can be used in combination with the existing `std::underlying_type<E>` if one wishes to convert it to a value of the underlying type instead.
 
-As `std::enumerator_value` is an enumerator value of the enumeration type, it can be used in combination with the existing `std::underlying_type` if one wishes to convert it a value of the underlying type instead.
-
-## Design Decisions
-
-### Design Goals
+## Design Goals
 
 The interface should:
 
-- be complete (provide _all_ information about the enumerator list of _any_ enumeration type)
+- be complete (provide all semantic information about the _enumerator-list_ of any possible enumeration type)
+- should provide efficient queries of the internal compiler data structure
 - be minimal and low-level
 - entail no run-time cost
 - entail no compile-time cost if unused
 - not mandate the form of a specific lookup algorithm or data structure
 - be self-contained and free of dependencies
-- be usable during translation
 
-### Design History
+## Design Log
 
 The proposal in its current form is the result of a merge of several separate proposals.
 
@@ -175,41 +144,63 @@ By making the input template parameters we can allow implementations to implemen
 
 ## Technical Specifications
 
-20.11.5 [meta.unary.prop.query] Type property queries
+__In Existing Section__ 20.11.5 [meta.unary.prop.query] Type property queries
 
 1. This sub-clause contains templates that may be used to query properties of types at compile time.
 
-Add to Table 50 - Type property queries:
+__Add To__ Table 50 - Type property queries:
 
-     template<class E> struct enumerator_count;
-     
-     An integer value representing the number of enumerators in E
+<table border="1">
+	<tr>
+		<td>
+			<b>Template</b>
+		</td>
+		<td>
+			<b>Value</b>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<code>template&lt;class E&gt; struct enumerator_count;</code>
+     	</td>
+    	<td>
+     		An integer value representing the number of enumerators in E<br/>
+			<br/>
+     		<i>Requires:</i> <code>std::is_enum&lt;E&gt;</code> shall be true
+		</td>
+	</tr>
 
-     Requires: std::is_enum<E> shall be true
+	<tr>
+		<td>
+     		<code>template&lt;class E, std::size_t I&gt; struct enumerator_value;</code>
+		</td>
+ 		<td>    
+     		A value of type <code>E</code> that is the <code>I</code>'th enumerator<br/>
+     		of <code>E</code> in declared order, where indexing of <code>I</code> is zero-based.<br/>
+			<br/>
+     		<i>Requires:</i> <code>std::is_enum&lt;E&gt;</code> shall be true<br/>
+     		<i>Requires:</i> <code>I</code> shall be nonnegative and less than <code>std::enumerator_count&lt;E&gt;</code>
+  		</td>
+	</tr>
 
-     --------------------------------------------
-     
-     template<class E, std::size_t I> struct enumerator_value;
-     
-     A value of type E that is the I'th enumerator of E in declared order,
-     where indexing of I is zero-based.
-     
-     Requires: std::is_enum<E> shall be true
-     Requires: I shall be nonnegative and less than enumerator_count<E>
+	<tr>
+  		<td>
+  			<code>template&lt;class E, std::size_t I&gt; struct enumerator_identifier;</code>
+  		</td>
 
-     --------------------------------------------
-
-     template<class E, std::size_t I> struct enumerator_identifier;
-
-     A value of type array of char, defined with constexpr, representing
-     the identifier of the I'th enumerator of E in declared order, where
-     indexing of I is zero-based. The value shall be null-terminated,
-     UTF-8 encoded, and have any universal-character-names decoded.
+  		<td>
+  		A value of type array of char, defined with constexpr, representing<br/>
+     	the identifier of the I'th enumerator of E in declared order, where<br/>
+     	indexing of I is zero-based. The value shall be null-terminated,<br/>
+     	UTF-8 encoded, and have any universal-character-names decoded.<br/>
+     	<br/>
+     	<i>Requires:</i> <code>std::is_enum<E></code> shall be true<br/>
+     	<i>Requires:</i> <code>I</code> shall be nonnegative and less than <code>std::enumerator_count&lt;E&gt;</code>
+  		</td>
+	</tr>
+</table>
      
-     Requires: std::is_enum<E> shall be true
-     Requires: I shall be nonnegative and less than enumerator_count<E>
-     
-Add new paragraph 4:
+__Add New Paragraph 4:__
 
      [Example:
      
@@ -278,14 +269,15 @@ Here is an the interface from our reference implementation:
     };
    
     template<typename E, std::size_t I>
-    struct enumerator_identifier {
+    struct enumerator_identifier
+    {
         static_assert(std::is_enum<E>::value, "E not enum type");
 		static_assert(0 <= I && I < std::enumerator_count<E>::value, "I out-of-bounds");
 
         static constexpr char value[] = __enumerator_identifier(E, I);
     };
 
-As can be seen it is a thin wrapper for three compiler intrinsics that inspect the annotated AST of the enum specifier.  These are called during translation when the templates are instantiated.
+As can be seen it is a thin wrapper for three compiler intrinsics that inspect the annotated AST of the _enumerator-list_.  These are called during translation when the templates are instantiated.
 
 ## Acknowledgements
 
