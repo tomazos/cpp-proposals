@@ -22,7 +22,7 @@ Reply-to: Andrew Tomazos <andrewtomazos@gmail.com>, Cristian Kaeser <christianka
 
 An enumeration type is defined by an _enum-specifier_ that contains an _enumerator-list_.
 
-We propose to add three additional Property Queries [meta.unary.prop.query] to the Metaprogramming and Type Traits Standard Library that provide compile-time access to the _enumerator-list_ of an enumeration type.
+We propose to add three Property Queries [meta.unary.prop.query] to the Metaprogramming and Type Traits Standard Library that provide compile-time access to the _enumerator-list_ of an enumeration type.
 
 Specifically:
 
