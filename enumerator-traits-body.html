@@ -4,7 +4,7 @@
 
 <p>Project:    Programming Language C++, Library Working Group</p>
 
-<p>Reply-to: Andrew Tomazos <a href="&#x6d;&#97;&#105;&#108;&#116;&#x6f;&#58;&#97;&#x6e;&#100;&#x72;&#101;&#119;&#x74;&#x6f;&#x6d;&#x61;&#x7a;&#x6f;&#115;&#x40;&#103;&#109;&#x61;&#105;&#108;&#46;&#99;&#111;&#x6d;">&#97;&#x6e;&#x64;&#x72;&#101;&#119;&#116;&#111;&#109;&#x61;&#x7a;&#x6f;&#115;&#x40;&#103;&#x6d;&#97;&#x69;&#108;&#46;&#99;&#x6f;&#109;</a>, Cristian Kaeser <a href="&#109;&#x61;&#x69;&#108;&#x74;&#x6f;&#58;&#99;&#104;&#114;&#105;&#x73;&#116;&#105;&#x61;&#110;&#107;&#97;&#x65;&#x73;&#101;&#x72;&#x38;&#55;&#x40;&#103;&#111;&#x6f;&#103;&#108;&#101;&#x6d;&#x61;&#x69;&#x6c;&#46;&#99;&#111;&#109;">&#99;&#104;&#114;&#x69;&#115;&#116;&#105;&#97;&#110;&#x6b;&#97;&#x65;&#x73;&#x65;&#114;&#x38;&#55;&#x40;&#103;&#111;&#x6f;&#103;&#108;&#101;&#x6d;&#x61;&#105;&#x6c;&#x2e;&#99;&#x6f;&#109;</a></p>
+<p>Reply-to: Andrew Tomazos <a href="&#109;&#x61;&#105;&#x6c;&#116;&#111;&#x3a;&#x61;&#x6e;&#x64;&#114;&#101;&#119;&#x74;&#111;&#x6d;&#97;&#x7a;&#111;&#x73;&#x40;&#x67;&#109;&#97;&#105;&#x6c;&#x2e;&#99;&#111;&#109;">&#97;&#110;&#100;&#114;&#101;&#119;&#116;&#x6f;&#x6d;&#x61;&#122;&#111;&#115;&#64;&#x67;&#109;&#97;&#105;&#x6c;&#46;&#x63;&#x6f;&#109;</a>, Cristian Kaeser <a href="&#x6d;&#x61;&#105;&#108;&#116;&#111;&#58;&#99;&#104;&#x72;&#105;&#115;&#x74;&#x69;&#97;&#110;&#107;&#x61;&#101;&#115;&#x65;&#x72;&#56;&#x37;&#x40;&#103;&#x6f;&#x6f;&#x67;&#108;&#x65;&#109;&#x61;&#x69;&#108;&#x2e;&#x63;&#111;&#x6d;">&#x63;&#x68;&#114;&#x69;&#115;&#x74;&#x69;&#97;&#x6e;&#x6b;&#x61;&#101;&#115;&#101;&#114;&#56;&#x37;&#64;&#x67;&#111;&#x6f;&#x67;&#108;&#x65;&#109;&#x61;&#x69;&#x6c;&#x2e;&#x63;&#111;&#109;</a></p>
 
 <h1>Enumerator List Property Queries</h1>
 
@@ -23,7 +23,18 @@
 
 <h2>Introduction</h2>
 
-<p>An enumeration type is defined by an <em>enum-specifier</em> that contains an <em>enumerator-list</em>.  We propose to add three additional Property Queries [meta.unary.prop.query] to the Metaprogramming and Type Traits Standard Library that provide compile-time access to <em>enumerator-list</em>.  Specifically the size of the <em>enumerator-list</em>, <code>std::enumerator_count&lt;E&gt;</code>, and for the <code>I</code>&lsquo;th <em>enumerator_definition</em> its value, <code>std::enumerator_value&lt;E,I&gt;</code>, and its identifier, <code>std::enumerator_identifier&lt;E,I&gt;</code>.</p>
+<p>An enumeration type is defined by an <em>enum-specifier</em> that contains an <em>enumerator-list</em>.</p>
+
+<p>We propose to add three additional Property Queries [meta.unary.prop.query] to the Metaprogramming and Type Traits Standard Library that provide compile-time access to the <em>enumerator-list</em> of an enumeration type.</p>
+
+<p>Specifically:</p>
+
+<ul>
+<li><code>std::enumerator_count&lt;E&gt;</code>: the length of the <em>enumerator-list</em></li>
+<li><code>std::enumerator_value&lt;E,I&gt;</code>: the value of the <code>I</code>&lsquo;th enumerator</li>
+<li><code>std::enumerator_identifier&lt;E,I&gt;</code>: the identifier of the <code>I</code>&lsquo;th enumerator.</li>
+</ul>
+
 
 <p>These urgently needed queries will enable metaprogrammers to implement higher-level facilities such as static checks and reflection.  Acceptance of this proposal does not preclude future standardization of higher-level facilities.</p>
 

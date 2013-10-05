@@ -20,7 +20,15 @@ Reply-to: Andrew Tomazos <andrewtomazos@gmail.com>, Cristian Kaeser <christianka
 
 ## Introduction
 
-An enumeration type is defined by an _enum-specifier_ that contains an _enumerator-list_.  We propose to add three additional Property Queries [meta.unary.prop.query] to the Metaprogramming and Type Traits Standard Library that provide compile-time access to _enumerator-list_.  Specifically the size of the _enumerator-list_, `std::enumerator_count<E>`, and for the `I`'th _enumerator_definition_ its value, `std::enumerator_value<E,I>`, and its identifier, `std::enumerator_identifier<E,I>`.
+An enumeration type is defined by an _enum-specifier_ that contains an _enumerator-list_.
+
+We propose to add three additional Property Queries [meta.unary.prop.query] to the Metaprogramming and Type Traits Standard Library that provide compile-time access to the _enumerator-list_ of an enumeration type.
+
+Specifically:
+
+- `std::enumerator_count<E>`: the length of the _enumerator-list_
+- `std::enumerator_value<E,I>`: the value of the `I`'th enumerator
+- `std::enumerator_identifier<E,I>`: the identifier of the `I`'th enumerator.
 
 These urgently needed queries will enable metaprogrammers to implement higher-level facilities such as static checks and reflection.  Acceptance of this proposal does not preclude future standardization of higher-level facilities.
 
