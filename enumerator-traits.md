@@ -196,7 +196,7 @@ __Add To__ Table 50 - Type property queries:
      	indexing of I is zero-based. The value shall be null-terminated,<br/>
      	UTF-8 encoded, and have any universal-character-names decoded.<br/>
      	<br/>
-     	<i>Requires:</i> <code>std::is_enum<E></code> shall be true<br/>
+     	<i>Requires:</i> <code>std::is_enum&lt;E&gt;</code> shall be true<br/>
      	<i>Requires:</i> <code>I</code> shall be nonnegative and less than <code>std::enumerator_count&lt;E&gt;</code>
   		</td>
 	</tr>
