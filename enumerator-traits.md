@@ -10,6 +10,7 @@ Reply-to: Andrew Tomazos <andrewtomazos@gmail.com>, Christian Kaeser <christiank
 
 ## Table of Contents
 
+- Background
 - Introduction
 - Motivation and Scope
 - Design Goals
@@ -20,9 +21,12 @@ Reply-to: Andrew Tomazos <andrewtomazos@gmail.com>, Christian Kaeser <christiank
 - Performance Issues
 - Acknowledgements
 
-## Introduction
+## Background
 
 An enumeration type is defined by an _enum-specifier_ that contains an _enumerator-list_.  An _enumerator-list_ is a sequence of zero or more _enumerator-definitions_. Each _enumerator-definition_ intoduces an identifier (the name of the enumerator) and a corresponding value (either implicitly or explicitly).
+
+## Introduction
+
 
 We propose to add three Property Queries [meta.unary.prop.query] to the Metaprogramming and Type Traits Standard Library that provide compile-time access to the _enumerator-list_ of an enumeration type.
 

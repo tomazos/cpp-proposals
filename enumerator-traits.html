@@ -10,13 +10,14 @@
 
 <p>Project:    Programming Language C++, Library Working Group</p>
 
-<p>Reply-to: Andrew Tomazos <a href="&#x6d;&#97;&#105;&#108;&#x74;&#x6f;&#58;&#97;&#x6e;&#100;&#x72;&#101;&#119;&#x74;&#x6f;&#x6d;&#x61;&#122;&#x6f;&#115;&#x40;&#103;&#x6d;&#97;&#x69;&#x6c;&#x2e;&#99;&#x6f;&#x6d;">&#97;&#110;&#x64;&#114;&#101;&#119;&#x74;&#111;&#x6d;&#97;&#122;&#111;&#115;&#x40;&#x67;&#109;&#97;&#105;&#108;&#x2e;&#x63;&#111;&#109;</a>, Christian Kaeser <a href="&#109;&#97;&#x69;&#x6c;&#x74;&#111;&#58;&#99;&#104;&#x72;&#x69;&#x73;&#x74;&#105;&#97;&#110;&#x6b;&#x61;&#101;&#x73;&#x65;&#x72;&#56;&#x37;&#x40;&#103;&#111;&#x6f;&#x67;&#108;&#x65;&#x6d;&#97;&#105;&#108;&#x2e;&#99;&#x6f;&#x6d;">&#x63;&#104;&#114;&#105;&#x73;&#116;&#105;&#x61;&#x6e;&#x6b;&#97;&#101;&#x73;&#x65;&#114;&#56;&#x37;&#x40;&#103;&#111;&#111;&#103;&#x6c;&#101;&#109;&#x61;&#105;&#x6c;&#46;&#x63;&#111;&#x6d;</a></p>
+<p>Reply-to: Andrew Tomazos <a href="&#109;&#97;&#x69;&#x6c;&#x74;&#x6f;&#x3a;&#97;&#110;&#100;&#114;&#101;&#119;&#116;&#x6f;&#x6d;&#97;&#122;&#111;&#115;&#x40;&#x67;&#x6d;&#97;&#105;&#x6c;&#46;&#x63;&#x6f;&#x6d;">&#x61;&#x6e;&#x64;&#x72;&#x65;&#x77;&#116;&#111;&#x6d;&#x61;&#x7a;&#x6f;&#x73;&#x40;&#x67;&#x6d;&#x61;&#105;&#x6c;&#x2e;&#99;&#x6f;&#x6d;</a>, Christian Kaeser <a href="&#x6d;&#x61;&#x69;&#x6c;&#x74;&#x6f;&#58;&#99;&#104;&#114;&#x69;&#x73;&#x74;&#105;&#97;&#x6e;&#x6b;&#x61;&#101;&#x73;&#101;&#114;&#56;&#x37;&#x40;&#103;&#x6f;&#111;&#103;&#108;&#x65;&#109;&#x61;&#x69;&#x6c;&#46;&#99;&#x6f;&#109;">&#99;&#x68;&#x72;&#105;&#115;&#116;&#105;&#97;&#x6e;&#x6b;&#97;&#101;&#x73;&#101;&#x72;&#x38;&#x37;&#x40;&#103;&#111;&#111;&#103;&#x6c;&#101;&#x6d;&#97;&#x69;&#x6c;&#46;&#99;&#x6f;&#x6d;</a></p>
 
 <h1>Enumerator List Property Queries</h1>
 
 <h2>Table of Contents</h2>
 
 <ul>
+<li>Background</li>
 <li>Introduction</li>
 <li>Motivation and Scope</li>
 <li>Design Goals</li>
@@ -29,9 +30,11 @@
 </ul>
 
 
-<h2>Introduction</h2>
+<h2>Background</h2>
 
 <p>An enumeration type is defined by an <em>enum-specifier</em> that contains an <em>enumerator-list</em>.  An <em>enumerator-list</em> is a sequence of zero or more <em>enumerator-definitions</em>. Each <em>enumerator-definition</em> intoduces an identifier (the name of the enumerator) and a corresponding value (either implicitly or explicitly).</p>
+
+<h2>Introduction</h2>
 
 <p>We propose to add three Property Queries [meta.unary.prop.query] to the Metaprogramming and Type Traits Standard Library that provide compile-time access to the <em>enumerator-list</em> of an enumeration type.</p>
 
