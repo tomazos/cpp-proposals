@@ -1,3 +1,9 @@
+<html>
+<head>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+</head>
+<body>
+
 <p>Document number: Nnnnn=yy-nnnn (Not yet assigned)</p>
 
 <p>Date: 2013-10-03</p>
@@ -11,24 +17,25 @@
 <h2>Table of Contents</h2>
 
 <ul>
-<li>Background</li>
-<li>Introduction</li>
-<li>Motivation and Scope</li>
-<li>Design Goals</li>
-<li>Design Log</li>
-<li>Technical Specifications</li>
-<li>Reference Implementation</li>
-<li>Use Cases</li>
-<li>Performance Issues</li>
-<li>Acknowledgements</li>
+<li><a href="#1">Background</a></li>
+<li><a href="#2">Introduction</a></li>
+<li><a href="#3">Motivation and Scope</a></li>
+<li><a href="#4">Impact On The Standard</a></li>
+<li><a href="#5">Design Goals</a></li>
+<li><a href="#6">Technical Specifications</a></li>
+<li><a href="#7">Design Log</a></li>
+<li><a href="#8">Reference Implementation</a></li>
+<li><a href="#9">Use Cases</a></li>
+<li><a href="#10">Example Usage</a></li>
+<li><a href="#11">Acknowledgements / References</a></li>
 </ul>
 
 
-<h2>Background</h2>
+<h2 id="1">Background</h2>
 
 <p>An enumeration type is defined by an <em>enum-specifier</em>.  An <em>enum-specifier</em> contains an <em>enumerator-list</em>.  An <em>enumerator-list</em> is a sequence of zero or more <em>enumerator-definitions</em>. Each <em>enumerator-definition</em> introduces an identifier (the name of the enumerator) and a corresponding value (either implicitly or explicitly).</p>
 
-<h2>Introduction</h2>
+<h2 id="2">Introduction</h2>
 
 <p>We propose to add three Property Queries [meta.unary.prop.query] to the Metaprogramming and Type Traits Standard Library that provide compile-time access to the <em>enumerator-list</em> of an enumeration type.</p>
 
@@ -43,7 +50,7 @@
 
 <p>These urgently needed queries will enable metaprogrammers to implement frequently-asked-for higher-level facilities such as static checks and reflection.  Acceptance of this proposal does not preclude future standardization of such higher-level facilities.</p>
 
-<h2>Motivation and Scope</h2>
+<h2 id="3">Motivation and Scope</h2>
 
 <p>Being able to inspect the <em>enumerator-list</em> during translation is the missing common foundation in C++ of a large number of frequently-asked-for enumeration-related reflection facilities.</p>
 
@@ -64,7 +71,7 @@
 
 <p>We have a complete reference implementation of the proposed feature.  It is extremely easy to implement, and for a basic implementation requires only implementing three compiler intrinsics that inspect the annotated AST of the <em>enumerator-list</em>.  The interface is setup, as for existing meta property queries, so that these intrinsics only need to be callable at compile-time when the properties are instantiated - and so does not mandate any run-time code generation at all.  The compile-time cost should be non-exisiting if the properties are never instantiated, and as it provides direct access the internal compiler data structure the cost when instantiated is minimized.</p>
 
-<h2>Impact On the Standard</h2>
+<h2 id="4">Impact On the Standard</h2>
 
 <p>The proposed feature adds three Property Queries to the Metaprogramming and Type Traits library in the typical form.  It requires only some minimal compiler support to implement the three queries.</p>
 
@@ -74,7 +81,7 @@
 
 <p><code>std::make_index_sequence</code> is also useful for ease-of-use to transform the properties into a pack or a constexpr array if so desired.</p>
 
-<h2>Design Goals</h2>
+<h2 id="5">Design Goals</h2>
 
 <p>Our design goals for the interface were:</p>
 
@@ -91,7 +98,7 @@
 
 <p>There is a more detailed rationale and history of how they were arrived at and applied under the section Design Log below.</p>
 
-<h2>Technical Specifications</h2>
+<h2 id="6">Technical Specifications</h2>
 
 <p><strong>In Existing Section</strong> 20.11.5 [meta.unary.prop.query] Type property queries</p>
 
@@ -202,7 +209,7 @@
  -- end example]
 </code></pre>
 
-<h2>Design Log</h2>
+<h2 id="7">Design Log</h2>
 
 <p>The proposal in its current form is the result of a merge of several separate proposals.</p>
 
@@ -297,7 +304,7 @@ enum E5 { a = 1 &lt;&lt; 0, b = 1 &lt;&lt; 1, c = 1 &lt;&lt; 2, m = 0b111 }; // 
 <pre><code> template&lt;class E, size_t I&gt; constexpr E enumerator_value();
 </code></pre>
 
-<h2>Reference Implementation</h2>
+<h2 id="8">Reference Implementation</h2>
 
 <p>Here is an example library interface definition for the three property queries based on the reference implementation:</p>
 
@@ -328,7 +335,7 @@ struct enumerator_value : std::integral_constant&lt;E, __enumerator_value(E, I)&
 
 <p>As can be seen these are only thin wrappers around compiler intrinsics (that for example in Clang directly look up simple clang AST EnumDecl node properties).  The intrinsics only accept compile-time constants and do not generate any runtime code.</p>
 
-<h2>Use Cases</h2>
+<h2 id="9">Use Cases</h2>
 
 <p>An incomplete list of use cases for the three properties follows.  All uses listed can be generated during translation with metaprogramming, and can be used during translation or at run-time.  This can be shown to be true as the properties provide the complete semantic information available from the source syntax of <em>enumerator-list</em>.</p>
 
@@ -355,7 +362,7 @@ struct enumerator_value : std::integral_constant&lt;E, __enumerator_value(E, I)&
 </ul>
 
 
-<h2>Example Usage</h2>
+<h2 id="10">Example Usage</h2>
 
 <p>As for the existing properties <code>std::rank</code> and <code>std::extent</code>, the individual properties can be expanded into a pack or an array with an index sequence pack (<code>std::make_index_sequence</code>, see N3658).  For example:</p>
 
@@ -437,8 +444,11 @@ constexpr const char *enum_value_to_str(E val) {
 
 <p>While some of the advanced functionality mentioned in this section might be of general enough use to potentially warrant standardization, the specifics of such APIs will take longer to establish existing practice, and so should not delay initial adoption of the general underlying interface proposed here.</p>
 
-<h2>Acknowledgements / References</h2>
+<h2 id="11">Acknowledgements / References</h2>
 
 <p>We would like to thank David Krauss and Thiago Macieira for valuable initial feedback on this proposal.</p>
 
 <p>A reference implementation of the proposed property queries is part of a clang branch (containing additional intrinsics for other reflection tasks) that can be checked out from github: https://github.com/ChristianKaeser/clang-reflection</p>
+</body>
+</html>
+

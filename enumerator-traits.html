@@ -10,7 +10,7 @@
 
 <p>Project:    Programming Language C++, Library Working Group</p>
 
-<p>Reply-to: Andrew Tomazos <a href="&#x6d;&#97;&#105;&#108;&#116;&#111;&#x3a;&#x61;&#x6e;&#x64;&#x72;&#x65;&#119;&#116;&#x6f;&#109;&#x61;&#122;&#111;&#x73;&#x40;&#x67;&#109;&#x61;&#x69;&#x6c;&#46;&#99;&#111;&#109;">&#97;&#110;&#x64;&#114;&#101;&#x77;&#116;&#x6f;&#109;&#x61;&#x7a;&#x6f;&#115;&#x40;&#x67;&#x6d;&#x61;&#105;&#x6c;&#46;&#x63;&#x6f;&#x6d;</a>, Christian Kaeser <a href="&#x6d;&#97;&#x69;&#x6c;&#x74;&#x6f;&#x3a;&#x63;&#x68;&#x72;&#105;&#x73;&#x74;&#x69;&#x61;&#x6e;&#x6b;&#97;&#101;&#x73;&#101;&#x72;&#56;&#55;&#64;&#x67;&#x6f;&#111;&#103;&#108;&#101;&#109;&#x61;&#x69;&#x6c;&#46;&#99;&#111;&#x6d;">&#99;&#104;&#114;&#x69;&#x73;&#x74;&#x69;&#97;&#x6e;&#x6b;&#97;&#101;&#115;&#x65;&#114;&#56;&#55;&#x40;&#x67;&#111;&#111;&#103;&#108;&#101;&#x6d;&#x61;&#x69;&#x6c;&#46;&#x63;&#111;&#109;</a></p>
+<p>Reply-to: Andrew Tomazos <a href="&#x6d;&#x61;&#105;&#x6c;&#x74;&#x6f;&#x3a;&#x61;&#x6e;&#100;&#114;&#101;&#x77;&#116;&#111;&#x6d;&#97;&#x7a;&#x6f;&#x73;&#64;&#x67;&#x6d;&#97;&#x69;&#108;&#x2e;&#x63;&#x6f;&#109;">&#x61;&#110;&#x64;&#x72;&#x65;&#119;&#116;&#111;&#x6d;&#x61;&#122;&#x6f;&#x73;&#64;&#103;&#x6d;&#x61;&#105;&#x6c;&#x2e;&#x63;&#x6f;&#109;</a>, Christian Käser <a href="&#109;&#97;&#105;&#108;&#x74;&#x6f;&#x3a;&#x63;&#104;&#114;&#x69;&#x73;&#x74;&#x69;&#x61;&#110;&#x6b;&#97;&#101;&#115;&#101;&#114;&#56;&#x37;&#64;&#103;&#111;&#x6f;&#x67;&#108;&#x65;&#x6d;&#97;&#x69;&#108;&#x2e;&#x63;&#x6f;&#109;">&#x63;&#x68;&#x72;&#x69;&#x73;&#x74;&#105;&#x61;&#110;&#x6b;&#x61;&#101;&#x73;&#101;&#x72;&#56;&#55;&#x40;&#x67;&#x6f;&#x6f;&#x67;&#108;&#101;&#x6d;&#97;&#105;&#108;&#x2e;&#99;&#111;&#109;</a></p>
 
 <h1>Enumerator List Property Queries</h1>
 
@@ -41,9 +41,9 @@
 <p>Specifically:</p>
 
 <ul>
-<li><code>std::enumerator_count&lt;E&gt;</code>: the length of the <em>enumerator-list</em></li>
-<li><code>std::enumerator_identifier&lt;E,I&gt;</code>: the identifier of the <code>I</code>&lsquo;th <em>enumerator-definition</em>.</li>
-<li><code>std::enumerator_value&lt;E,I&gt;</code>: the value of the <code>I</code>&lsquo;th <em>enumerator-definition</em>.</li>
+<li><code>std::enumerator_list_size&lt;E&gt;</code>: the number of <em>enumerator-definitions</em> in the <em>enumerator-list</em> of <code>E</code>.</li>
+<li><code>std::enumerator_identifier&lt;E,I&gt;</code>: the identifier from the <code>I</code>&lsquo;th <em>enumerator-definition</em>.</li>
+<li><code>std::enumerator_value&lt;E,I&gt;</code>: the value from the <code>I</code>&lsquo;th <em>enumerator-definition</em>.</li>
 </ul>
 
 
@@ -56,19 +56,19 @@
 <p>Because implementations do not currently expose this basic semantic information about an <em>enumerator-list</em> to library authors, implementing such facilities parameterized by the enumeration type is currently impossible.  Current workarounds involve either:</p>
 
 <ul>
-<li>Hand-maintaining and keeping synchronized secondary entities/lists for each <em>enum-specifier</em>.  Prone to error.</li>
-<li>Wrapping the <em>enum-specifier</em>, with macros and using obscene preprocessor tricks.  This obfuscates the enum specifier.</li>
-<li>Implementing a &ldquo;precompiler&rdquo; tool such as Qt moc to scan the source for enum specifiers and then automatically-generate additional translation units.  This is a huge amount of work to implement, and is inefficient, as it requires parsing the source twice from a separate tool.</li>
+<li>Hand-maintaining and keeping synchronized secondary entities/lists for each <em>enum-specifier</em>.  Prone to error and tedious.</li>
+<li>Wrapping the <em>enum-specifier</em>, with macros and using obscene preprocessor tricks.  This obfuscates the <em>enum-specifier</em> to both programmers and programming tools, relies on non-standard preprocessor features and can complicate the build process.</li>
+<li>Implementing a &ldquo;precompiler&rdquo; tool such as Qt moc to scan the source for enum specifiers and then automatically-generate additional translation units.  This is a huge amount of work to implement and maintain in synchronization with the compiler, is inefficient, as it requires parsing the source twice from a separate tool, and complicates the build process.</li>
 </ul>
 
 
-<p>These are all just workarounds to get at information that the compiler has readily available during translation, but does not expose.  This proposal corrects this.</p>
+<p>These are all just workarounds to get at information that the compiler has readily available during translation, but does not expose.  This proposal corrects that.</p>
 
-<p>The intended user community of this proposal are the infrastructure-providers and framework-authors for almost every enumeration user.</p>
+<p>The intended user community of this proposal are infrastructure-providers and framework-authors, which will enable them to provide generic tools benefitting most enumeration users.</p>
 
 <p>The use of the proposed feature is intended, as for existing Metaprogramming Property Queries, to support programmers that use metaprogramming and generic programming to form higher-level constructs at compile-time.</p>
 
-<p>We have a complete reference implementation of the proposed feature.  It is extremely easy to implement, and for a basic implementation requires only implementing three compiler intrinsics that inspect the annotated AST of the <em>enumerator-list</em>.  The interface is setup, as for existing meta property queries, so that these intrinsics only need to be callable at compile-time when the properties are instantiated - and so implies no mandated run-time resources at all.  The compile-time cost is of course also zero if the properties are never instantiated.</p>
+<p>We have a complete reference implementation of the proposed feature.  It is extremely easy to implement, and for a basic implementation requires only implementing three compiler intrinsics that inspect the annotated AST of the <em>enumerator-list</em>.  The interface is setup, as for existing meta property queries, so that these intrinsics only need to be callable at compile-time when the properties are instantiated - and so does not mandate any run-time code generation at all.  The compile-time cost should be non-exisiting if the properties are never instantiated, and as it provides direct access the internal compiler data structure the cost when instantiated is minimized.</p>
 
 <h2>Impact On the Standard</h2>
 
@@ -82,7 +82,7 @@
 
 <h2>Design Goals</h2>
 
-<p>The interface should:</p>
+<p>Our design goals for the interface were:</p>
 
 <ul>
 <li>be complete (provide all semantic information about the <em>enumerator-list</em> of any possible enumeration type)</li>
@@ -90,10 +90,123 @@
 <li>be minimal and low-level</li>
 <li>entail no run-time cost</li>
 <li>entail no compile-time cost if unused</li>
-<li>not mandate the form of a specific lookup algorithm or data structure</li>
+<li>not mandate any specific lookup algorithm or data structure at runtime</li>
 <li>be self-contained and free of dependencies</li>
 </ul>
 
+
+<p>There is a more detailed rationale and history of how they were arrived at and applied under the section Design Log below.</p>
+
+<h2>Technical Specifications</h2>
+
+<p><strong>In Existing Section</strong> 20.11.5 [meta.unary.prop.query] Type property queries</p>
+
+<ol>
+<li>This sub-clause contains templates that may be used to query properties of types at compile time.</li>
+</ol>
+
+
+<p><strong>Add To</strong> Table 50 - Type property queries:</p>
+
+<table border="1">
+    <tr>
+        <td>
+            <b>Template</b>
+        </td>
+        <td>
+            <b>Value</b>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <code>template&lt;class E&gt; struct enumerator_list_size;</code>
+        </td>
+        <td>
+            An integer value representing the number of enumerators in E<br/>
+            <br/>
+            <i>Requires:</i> <code>std::is_enum&lt;E&gt;</code> shall be true
+        </td>
+    </tr>
+
+    <tr>
+        <td>
+            <code>template&lt;class E, std::size_t I&gt; struct enumerator_identifier;</code>
+        </td>
+
+        <td>
+        A value of type array of char, defined with constexpr, holding<br/>
+        the identifier of the I'th enumerator of E in declared order, where<br/>
+        indexing of I is zero-based. The value shall be null-terminated,<br/>
+        UTF-8 encoded, and have any universal-character-names decoded.<br/>
+        <br/>
+        <i>Requires:</i> <code>std::is_enum&lt;E&gt;</code> shall be true<br/>
+        <i>Requires:</i> <code>I</code> shall be nonnegative and less than <code>std::enumerator_list_size&lt;E&gt;</code>
+        </td>
+    </tr>
+
+    <tr>
+        <td>
+            <code>template&lt;class E, std::size_t I&gt; struct enumerator_value;</code>
+        </td>
+        <td>    
+            A value of type <code>E</code> that is the <code>I</code>'th enumerator<br/>
+            of <code>E</code> in declared order, where indexing of <code>I</code> is zero-based.<br/>
+            <br/>
+            <i>Requires:</i> <code>std::is_enum&lt;E&gt;</code> shall be true<br/>
+            <i>Requires:</i> <code>I</code> shall be nonnegative and less than <code>std::enumerator_list_size&lt;E&gt;</code>
+        </td>
+    </tr>
+
+</table>
+
+
+<p><strong>Add New Paragraph 4:</strong></p>
+
+<pre><code> [Example:
+
+ // In the below π is in source encoding (before translation phase 1)
+ enum foo
+ {
+     bar,
+     Baz,
+     Qux = 42,
+     Quux = 42,
+     eπ = 96,
+     f\u03C0 = 300000
+ };
+
+ // the following assertions hold
+ static_assert(enumerator_list_size&lt;foo&gt;::value == 6);
+
+ assert(std::strcmp(enumerator_identifier&lt;foo,0&gt;::value, u8"bar") == 0);
+ assert(std::strcmp(enumerator_identifier&lt;foo,1&gt;::value, u8"Baz") == 0);
+ assert(std::strcmp(enumerator_identifier&lt;foo,2&gt;::value, u8"Qux") == 0);
+ assert(std::strcmp(enumerator_identifier&lt;foo,3&gt;::value, u8"Quux") == 0);
+ assert(std::strcmp(enumerator_identifier&lt;foo,4&gt;::value, u8"eπ") == 0);
+ assert(std::strcmp(enumerator_identifier&lt;foo,5&gt;::value, u8"f\u03C0") == 0);
+
+ static_assert(enumerator_value&lt;foo,0&gt;::value == Bar);
+ static_assert(enumerator_value&lt;foo,1&gt;::value == Baz);
+ static_assert(enumerator_value&lt;foo,2&gt;::value == Qux);
+ static_assert(enumerator_value&lt;foo,3&gt;::value == Quux);
+ static_assert(enumerator_value&lt;foo,4&gt;::value == eπ);
+ static_assert(enumerator_value&lt;foo,5&gt;::value == f\u03C0);
+
+ // universal character names handled correctly:
+ assert(std::strcmp(enumerator_identifier&lt;foo,4&gt;::value, u8"e\u03C0") == 0);
+ assert(std::strcmp(enumerator_identifier&lt;foo,5&gt;::value, u8"fπ") == 0);
+ static_assert(enumerator_value&lt;foo,4&gt;::value == e\u03C0);
+ static_assert(enumerator_value&lt;foo,5&gt;::value == fπ);
+
+ // constant lvalue-to-rvalue conversion on array elements ok:
+ constexpr const char* str = enumerator_identifier&lt;foo,0&gt;::value;
+ static_assert(str[0] == 'b');
+ static_assert(str[1] == 'a');
+ static_assert(str[2] == 'r');
+ static_assert(str[3] == '\0');
+
+ -- end example]
+</code></pre>
 
 <h2>Design Log</h2>
 
@@ -153,7 +266,7 @@ enum E5 { a = 1 &lt;&lt; 0, b = 1 &lt;&lt; 1, c = 1 &lt;&lt; 2, m = 0b111 }; // 
 
 <p>To avoid the array relocation costs it was then considered to use functions:</p>
 
-<pre><code>    constexpr size_t enumerator_count();
+<pre><code>    constexpr size_t enumerator_list_size();
     constexpr const char* enumerator_identifier(size_t index);
     constexpr E enumerator_value(size_t index);
 </code></pre>
@@ -166,169 +279,66 @@ enum E5 { a = 1 &lt;&lt; 0, b = 1 &lt;&lt; 1, c = 1 &lt;&lt; 2, m = 0b111 }; // 
     {
         // number of enumerators in E
         template&lt;class E&gt;
-        struct enumerator_count { constexpr size_t value; }
+        struct enumerator_list_size : integral_constant&lt;size_t, /* ... */&gt; {};
 
         // identifier of I'th enumerator in E
         template&lt;class E, size_t I&gt;
-        struct enumerator_identifier { constexpr char value[]; }
+        struct enumerator_identifier { constexpr char value[] = /* ... */; };
 
         // value of I'th enumerator in E
         template&lt;class E, size_t I&gt;
-        struct enumerator_value { constexpr E value; }
+        struct enumerator_value : integral_constant&lt;E, /* ... */&gt; {};
     };
 </code></pre>
 
 <p>By making the input template parameters we can allow implementations to implement them as instrinsics that access and return information directly from the internal compiler enumerator list during translation, as per other type property queries.  We added requirements that E be an enumeration type and I must be in-bounds.</p>
 
-<h2>Technical Specifications</h2>
+<p>Alternative interfaces exposing the same functionality would be possible, for example utilising the new template variable form coming in the C++14 standard:</p>
 
-<p><strong>In Existing Section</strong> 20.11.5 [meta.unary.prop.query] Type property queries</p>
+<pre><code> template&lt;class E, size_t I&gt; constexpr E enumerator_value;
+</code></pre>
 
-<ol>
-<li>This sub-clause contains templates that may be used to query properties of types at compile time.</li>
-</ol>
+<p>But we considered keeping the API consistent with the existing style of <type_traits> more important than the (slightly) shorter access syntax. The same reasoning speaks against the longer template function syntax:</p>
 
-
-<p><strong>Add To</strong> Table 50 - Type property queries:</p>
-
-<table border="1">
-    <tr>
-        <td>
-            <b>Template</b>
-        </td>
-        <td>
-            <b>Value</b>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <code>template&lt;class E&gt; struct enumerator_count;</code>
-        </td>
-        <td>
-            An integer value representing the number of enumerators in E<br/>
-            <br/>
-            <i>Requires:</i> <code>std::is_enum&lt;E&gt;</code> shall be true
-        </td>
-    </tr>
-
-    <tr>
-        <td>
-            <code>template&lt;class E, std::size_t I&gt; struct enumerator_identifier;</code>
-        </td>
-
-        <td>
-        A value of type array of char, defined with constexpr, representing<br/>
-        the identifier of the I'th enumerator of E in declared order, where<br/>
-        indexing of I is zero-based. The value shall be null-terminated,<br/>
-        UTF-8 encoded, and have any universal-character-names decoded.<br/>
-        <br/>
-        <i>Requires:</i> <code>std::is_enum&lt;E&gt;</code> shall be true<br/>
-        <i>Requires:</i> <code>I</code> shall be nonnegative and less than <code>std::enumerator_count&lt;E&gt;</code>
-        </td>
-    </tr>
-
-    <tr>
-        <td>
-            <code>template&lt;class E, std::size_t I&gt; struct enumerator_value;</code>
-        </td>
-        <td>    
-            A value of type <code>E</code> that is the <code>I</code>'th enumerator<br/>
-            of <code>E</code> in declared order, where indexing of <code>I</code> is zero-based.<br/>
-            <br/>
-            <i>Requires:</i> <code>std::is_enum&lt;E&gt;</code> shall be true<br/>
-            <i>Requires:</i> <code>I</code> shall be nonnegative and less than <code>std::enumerator_count&lt;E&gt;</code>
-        </td>
-    </tr>
-
-</table>
-
-
-<p><strong>Add New Paragraph 4:</strong></p>
-
-<pre><code> [Example:
-
- // In the below π is in source encoding (before translation phase 1)
- enum foo
- {
-     bar,
-     Baz,
-     Qux = 42,
-     Quux = 42,
-     eπ = 96,
-     f\u03C0 = 300000
- };
-
- // the following assertions hold
- static_assert(enumerator_count&lt;foo&gt;::value == 6);
-
- assert(std::strcmp(enumerator_identifier&lt;foo,0&gt;::value, u8"bar") == 0);
- assert(std::strcmp(enumerator_identifier&lt;foo,1&gt;::value, u8"Baz") == 0);
- assert(std::strcmp(enumerator_identifier&lt;foo,2&gt;::value, u8"Qux") == 0);
- assert(std::strcmp(enumerator_identifier&lt;foo,3&gt;::value, u8"Quux") == 0);
- assert(std::strcmp(enumerator_identifier&lt;foo,4&gt;::value, u8"eπ") == 0);
- assert(std::strcmp(enumerator_identifier&lt;foo,5&gt;::value, u8"f\u03C0") == 0);
-
- static_assert(enumerator_value&lt;foo,0&gt;::value == Bar);
- static_assert(enumerator_value&lt;foo,1&gt;::value == Baz);
- static_assert(enumerator_value&lt;foo,2&gt;::value == Qux);
- static_assert(enumerator_value&lt;foo,3&gt;::value == Quux);
- static_assert(enumerator_value&lt;foo,4&gt;::value == eπ);
- static_assert(enumerator_value&lt;foo,5&gt;::value == f\u03C0);
-
- // universal character names handled correctly:
- assert(std::strcmp(enumerator_identifier&lt;foo,4&gt;::value, u8"e\u03C0") == 0);
- assert(std::strcmp(enumerator_identifier&lt;foo,5&gt;::value, u8"fπ") == 0);
- static_assert(enumerator_value&lt;foo,4&gt;::value == e\u03C0);
- static_assert(enumerator_value&lt;foo,5&gt;::value == fπ);
-
- // constant lvalue-to-rvalue conversion on array elements ok:
- constexpr const char* str = enumerator_identifier&lt;foo,0&gt;::value;
- static_assert(str[0] == 'b');
- static_assert(str[1] == 'a');
- static_assert(str[2] == 'r');
- static_assert(str[3] == '\0');
-
- -- end example]
+<pre><code> template&lt;class E, size_t I&gt; constexpr E enumerator_value();
 </code></pre>
 
 <h2>Reference Implementation</h2>
 
-<p>Here is an the interface from our reference implementation:</p>
+<p>Here is an example library interface definition for the three property queries based on the reference implementation:</p>
+
+<p>The <code>static_asserts</code> are shown just for exposition, the checks themselves can take place inside the intrinsics at instantiation-time:</p>
 
 <pre><code>template&lt;typename E&gt;
-struct enumerator_count // number of enumerators in E
+struct enumerator_list_size : std::integral_constant&lt;size_t, __enumerator_list_size(E)&gt;
 {
-    static_assert(std::is_enum&lt;E&gt;::value, "E not enum type");
-
-    static constexpr size_t value = __enumerator_count(E);
+    // static_assert(std::is_enum&lt;E&gt;::value, "E not enum type");
 };
 
 template&lt;typename E, std::size_t I&gt;
 struct enumerator_identifier
 {
-    static_assert(std::is_enum&lt;E&gt;::value, "E not enum type");
-    static_assert(0 &lt;= I &amp;&amp; I &lt; std::enumerator_count&lt;E&gt;::value, "I out-of-bounds");
+    // static_assert(std::is_enum&lt;E&gt;::value, "E not enum type");
+    // static_assert(0 &lt;= I &amp;&amp; I &lt; std::enumerator_list_size&lt;E&gt;::value, "I out-of-bounds");
 
-    static constexpr char value[] = __enumerator_identifier(E, I);
+    static constexpr decltype(auto) value = __enumerator_identifier(E, I);
 };
 
 template&lt;typename E, std::size_t I&gt;
-struct enumerator_value
+struct enumerator_value : std::integral_constant&lt;E, __enumerator_value(E, I)&gt;
 {
-    static_assert(std::is_enum&lt;E&gt;::value, "E not enum type");
-    static_assert(0 &lt;= I &amp;&amp; I &lt; std::enumerator_count&lt;E&gt;::value, "I out-of-bounds");
-
-    static constexpr E value = __enumerator_value(E, I);
+    // static_assert(std::is_enum&lt;E&gt;::value, "E not enum type");
+    // static_assert(0 &lt;= I &amp;&amp; I &lt; std::enumerator_list_size&lt;E&gt;::value, "I out-of-bounds");
 };
 </code></pre>
 
-<p>As can be seen it is a thin wrapper for three compiler intrinsics that inspect the annotated AST of the <em>enumerator-list</em>.  These are called during translation when the templates are instantiated.</p>
+<p>As can be seen these are only thin wrappers around compiler intrinsics (that for example in Clang directly look up simple clang AST EnumDecl node properties).  The intrinsics only accept compile-time constants and do not generate any runtime code.</p>
 
 <h2>Use Cases</h2>
 
 <p>An incomplete list of use cases for the three properties follows.  All uses listed can be generated during translation with metaprogramming, and can be used during translation or at run-time.  This can be shown to be true as the properties provide the complete semantic information available from the source syntax of <em>enumerator-list</em>.</p>
 
-<p>Given an enumeration type E, write a generic library facility that determines:</p>
+<p>Given an enumeration type E, write a generic library facility that will:</p>
 
 <ul>
 <li>Find the minimum and maximum enumerator (either of an enumerator, or the range from the closure of bit operations).</li>
@@ -351,9 +361,93 @@ struct enumerator_value
 </ul>
 
 
-<h2>Acknowledgements</h2>
+<h2>Example Usage</h2>
+
+<p>As for the existing properties <code>std::rank</code> and <code>std::extent</code>, the individual properties can be expanded into a pack or an array with an index sequence pack (<code>std::make_index_sequence</code>, see N3658).  For example:</p>
+
+<pre><code>template&lt;class E, class IdxSeq&gt;
+struct enumerator_data_t;
+
+template&lt;class E, size_t... Idx&gt;
+struct enumerator_data_t&lt;E, std::index_sequence&lt;Idx...&gt;&gt; {
+    static constexpr size_t count = std::enumerator_list_size&lt;E&gt;::value;
+    static constexpr E values[] = { std::enumerator_value&lt;E, Idx&gt;::value... };
+    static constexpr char const *names[] = { std::enumerator_identifier&lt;E, Idx&gt;::value... };
+};
+
+template&lt;class E&gt;
+using enumerator_data_t = enumerator_data_t&lt;E, std::make_index_sequence&lt; std::enumerator_list_size&lt;E&gt;::value &gt;&gt;;
+
+template&lt;typename E, size_t... Idx&gt; 
+constexpr E enumerator_data_t&lt;E, std::index_sequence&lt;Idx...&gt;&gt;::values[];
+template&lt;typename E, size_t... Idx&gt; 
+constexpr char const * enumerator_data_t&lt;E, std::index_sequence&lt;Idx...&gt;&gt;::names[];
+
+// simple usage: list all enumerator in their order of definition
+enum class E1 { first = 99, second = first, third };
+using E1D = enumerator_data_t&lt;E1&gt;;
+for (int i=0; i&lt;E1D::count; i++)
+    std::cout &lt;&lt; E1D::names[i] &lt;&lt; " = " &lt;&lt; (int)E1D::values[i] &lt;&lt; std::endl;
+</code></pre>
+
+<p>This builds an intermediate-level interface comparable to e.g. Java&rsquo;s Class.getEnumConstants().  From here constexpr functions can be written to operate on the enumerator data:</p>
+
+<pre><code>// determines the largest numerical value that is defined by the enum
+template&lt;typename E&gt;
+constexpr E enum_max_value() {
+    using ED = enumerator_data_t&lt;E&gt;;
+    using UT = std::underlying_type_t&lt;E&gt;;
+    static_assert(ED::count&gt;0, "maximum not defined on empty enum");
+    E ret = ED::values[0];
+    for (size_t i=1, e=ED::count; i&lt;e; ++i)
+        if (static_cast&lt;UT&gt;(ret)&lt;static_cast&lt;UT&gt;(ED::values[i]))
+            ret = ED::values[i];
+    return ret;
+}
+</code></pre>
+
+<p>Having the defined value range of an enumeration at hand allows creating wrappers around std::bitset or std::array taking the enum type as the key. These could be more efficient for certain applications, constexpr enabled replacements for std::set/map for certain tasks.</p>
+
+<p>Certain traits regarding the enum can then be determined quite easily with a similar algorithms:</p>
+
+<pre><code>// determines if the enumerators of E follow the default valuing
+// if yes, then calculating the enumerator index from an value of E is trivial
+template&lt;typename E&gt;
+constexpr bool is_trivially_valued_enum() {
+    using ED = enumerator_data_t&lt;E&gt;;
+    using UT = std::underlying_type_t&lt;E&gt;;
+    for (size_t i=0, e=ED::count; i&lt;e; ++i)
+        if (static_cast&lt;UT&gt;(ret) != static_cast&lt;UT&gt;(i))
+            return false;
+    return true;
+}
+</code></pre>
+
+<p>&hellip; which could be used to check correct usage of a very simple value-to-identifier conversion function:</p>
+
+<pre><code>template&lt;typename E&gt;
+constexpr const char *enum_value_to_str(E val) {
+    static_assert(is_trivially_valued_enum&lt;E&gt;(), "only implemented for simple enums");
+    size_t idx = static_cast&lt;size_t&gt;(val);
+    if (idx &gt;= std::enumerator_list_size&lt;E&gt;::value)
+        throw std::out_of_range("invalid enum value");
+    return enumerator_data_t&lt;E&gt;::names[idx];
+}
+</code></pre>
+
+<p>Of course, more universally applyable lookup algorithms can also be implemented. One option would be simply using a std::map or std::unordered_map for lookup, another to perform a binary search on a sorted array. Creating a lookup table for enumerations with a small value range should deliver performance comparable to compiler generated switch statements. An automatic selection of the most appropriate algorithm for a given enum type could also be implemented given the right support traits.</p>
+
+<p>Having good lookup method(s) in place would enable treating any enum as an ordinal type. The bitset/array wrappers mentioned above could apply this transformation instead of using the enum value directly to get a (for any given enum type) gapless index range.</p>
+
+<p>Performing a reverse lookup from an identifier string to the associated value is of course also possible. For this task, specific requirements will probably vary widely between applications (case (in)sensitive comparision, adding/removing pre-/post-fixes, fuzzy search etc.)  But all of these are implementable given the proposed interface.</p>
+
+<p>While some of the advanced functionality mentioned in this section might be of general enough use to potentially warrant standardization, the specifics of such APIs will take longer to establish existing practice, and so should not delay initial adoption of the general underlying interface proposed here.</p>
+
+<h2>Acknowledgements / References</h2>
 
 <p>We would like to thank David Krauss and Thiago Macieira for valuable initial feedback on this proposal.</p>
+
+<p>A reference implementation of the proposed property queries is part of a clang branch (containing additional intrinsics for other reflection tasks) that can be checked out from github: https://github.com/ChristianKaeser/clang-reflection</p>
 </body>
 </html>
 
