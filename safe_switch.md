@@ -3,7 +3,7 @@
     Project: Programming Language C++, Evolution Working Group
     Reply-to: Andrew Tomazos <andrewtomazos@gmail.com>
 
-# Safe Switch
+# C++17 Safe Switch
 
 ## History: BCPL -> B -> C -> C++
 
