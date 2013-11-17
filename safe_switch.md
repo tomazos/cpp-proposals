@@ -73,8 +73,8 @@ This is not as serious as accidental fallthrough, because this can be caught by 
 
 The third problem is that as for labels, cases can potentially be used in sub-scopes.  While there are some use cases for this, such as "Duff's Device":
 
-   void send(int* to, int* from, int count)
-   {
+    void send(int* to, int* from, int count)
+    {
         int n = (count + 7) / 8;
         switch(count % 8) {
         case 0: do {    *to = *from++;
