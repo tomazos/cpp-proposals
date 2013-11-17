@@ -161,8 +161,8 @@ The statement is unreachable anyway, so there is no clear use case.
 
 The third difference is that case labels associated with a `safe_switch` must appear at the outermost scope of the switch statement:
 
-   void send(int* to, int* from, int count)
-   {
+    void send(int* to, int* from, int count)
+    {
         int n = (count + 7) / 8;
         safe_switch(count % 8) {
         case 0: do {    *to = *from++;
