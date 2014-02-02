@@ -1,0 +1,585 @@
+%% main file for the C++ standard.
+%%
+
+%%--------------------------------------------------
+%% basics
+% \documentclass[letterpaper,oneside,openany]{memoir}
+\documentclass[ebook,10pt,oneside,openany,final]{memoir}
+% \includeonly{declarations}
+
+\usepackage{xcolor}
+\usepackage{mdframed}
+\usepackage[american]
+           {babel}        % needed for iso dates
+\usepackage[iso,american]
+           {isodate}      % use iso format for dates
+\usepackage[final]
+           {listings}     % code listings
+\usepackage{longtable}    % auto-breaking tables
+\usepackage{booktabs}     % fancy tables
+\usepackage{relsize}      % provide relative font size changes
+\usepackage{underscore}   % remove special status of '_' in ordinary text
+\usepackage{verbatim}     % improved verbatim environment
+\usepackage{parskip}      % handle non-indented paragraphs "properly"
+\usepackage{array}        % new column definitions for tables
+\usepackage[normalem]{ulem}
+\usepackage{color}        % define colors for strikeouts and underlines
+\usepackage{amsmath}      % additional math symbols
+\usepackage{mathrsfs}     % mathscr font
+\usepackage{multicol}
+\usepackage{xspace}
+\usepackage{fixme}
+\usepackage{lmodern}
+\usepackage[T1]{fontenc}
+\usepackage[pdftex, final]{graphicx}
+\usepackage[pdftex,
+            pdftitle={Explicit Flow Control},
+            pdfsubject={Explicit Flow Control},
+            pdfcreator={Andrew Tomazos},
+            bookmarks=true,
+            bookmarksnumbered=true,
+            pdfpagelabels=true,
+            pdfpagemode=UseOutlines,
+            pdfstartview=FitH,
+            linktocpage=true,
+            colorlinks=true,
+            linkcolor=blue,
+            plainpages=false
+           ]{hyperref}
+\usepackage{memhfixc}     % fix interactions between hyperref and memoir
+
+\input{layout}
+\input{styles}
+\input{macros}
+\input{tables}
+
+\makeindex[generalindex]
+\makeindex[libraryindex]
+\makeindex[grammarindex]
+\makeindex[impldefindex]
+
+%%--------------------------------------------------
+%% add special hyphenation rules
+\hyphenation{tem-plate ex-am-ple in-put-it-er-a-tor name-space name-spaces}
+
+\colorlet{shadecolor}{gray!40}
+
+\begin{document}
+\chapterstyle{cppstd}
+\pagestyle{cpppage}
+
+%%--------------------------------------------------
+%% Version numbers
+\newcommand{\docno}{N3879}
+\newcommand{\prevdocno}{N????}
+\newcommand{\cppver}{201103L}
+
+%% Release date
+\newcommand{\reldate}{\today}
+
+%% Library chapters
+\newcommand{\firstlibchapter}{language.support}
+\newcommand{\lastlibchapter}{thread}
+
+\mainmatter
+\setglobalstyles
+
+\begingroup
+\def\hd{\begin{tabular}{ll}
+          \textbf{Document Number:} & {\larger\docno}             \\
+          \textbf{Date:}            & \reldate                    \\
+          \textbf{Project:}         & Programming Language C++    \\
+                                    & Evolution Working Group \\
+          \textbf{Reply to:}        & Andrew Tomazos                 \\
+                                    & andrewtomazos@gmail.com
+          \end{tabular}
+}
+\newlength{\hdwidth}
+\settowidth{\hdwidth}{\hd}
+\hfill\begin{minipage}{\hdwidth}\hd\end{minipage}
+\endgroup
+
+\vspace{2.5cm}
+\begin{center}
+\textbf{\Huge
+Explicit Flow Control: break label, goto case and explicit switch}
+\end{center}
+
+\rSec1[proposal]{Proposal}
+
+\rSec2[proposal.summary]{Informal Summary}%
+
+We propose adding to C++ some new jump statements and making available an explicit-specifier for switch statements.
+
+The new jump statements are \tcode{break} \grammarterm{label}, \tcode{continue} \grammarterm{label} (same as Java), \tcode{goto case} \grammarterm{constant-expression} and \tcode{goto default} (same as C\#).
+
+An \tcode{explicit switch} statement (same as C\#) causes each case block to have its own block scope, and to never flow off the end.  That is, each case block must be explicitly exited.  (The implicit fallthrough semantic between two consecutive case blocks can be expressed in an \tcode{explicit switch} using a \tcode{goto case} statement instead.)
+
+\rSec2[proposal.existing]{Existing Practice}%
+
+Each proposed addition has already been present in either Java or C\# for many years, and so has been extensively tested by millions of programmers.
+
+\rSec2[proposal.motivation]{Motivation and Examples}%
+
+\pnum
+The break label and continue label forms are used to easily break or continue on an outer enclosing statement:
+
+\begin{codeblock}
+loop_ts:
+  for (T t : ts)
+    for (U u : us)
+      if (f(u,v))
+      {
+        g(u,v);
+        break loop_ts;
+      }
+\end{codeblock}
+
+\pnum
+The goto case statement is used to transfer control between case blocks in a switch:
+
+\begin{codeblock}
+  switch (cond)
+  {
+  case foo:
+    do_foo();
+    break;
+
+  case bar:
+    do_bar();
+    goto case foo;
+
+  case baz:
+    do_baz();
+  };
+\end{codeblock}
+
+\pnum
+An explicit-specified switch is used to avoid the deadly accidental implicit fallthrough bug, and to declare local variables without adding redundant braces:
+
+\begin{codeblock}
+  explicit switch (digit)
+  {
+  case 0:
+  case 1:
+  case 2:
+    T t = f(0,2); // OK: see below
+    return t.low();
+
+  case 4:
+  case 8:
+    if (x % 2 == 0)
+    {
+      g();
+      // ERROR: potential flow off end of explicit-switch case statement, use "goto default" instead
+    }
+    else
+      throw logic_error("x must be even");
+
+  default:
+    T t = f(4); // OK: The two names `t` are in different scope
+    return t.high();
+  }
+\end{codeblock}
+
+\pnum
+(Fun Historical Footnote: C++ was derived from C which was derived from B which was derived in part from BCPL.  BCPL had the goto case statement semantic in the form of a docase statement.)
+
+\rSec1[proposal.techspecs]{Technical Specifications}
+
+\rSec2[proposal.grammar]{Grammar Additions}
+
+\begin{bnf}
+\nontermdef{labeled-statement}\br
+    attribute-specifier-seq\opt identifier \terminal{:} statement\br
+    attribute-specifier-seq\opt \underline{case-label} \terminal{:} statement\br
+\end{bnf}
+
+\begin{bnf}
+\nontermdef{\underline{case-label}}\br
+    \terminal{case} constant-expression\br
+    \terminal{default}\br
+\end{bnf}
+
+\begin{bnf}
+\nontermdef{jump-statement}\br
+    \terminal{break} \underline{identifier\opt} \terminal{;}\br
+    \terminal{continue} \underline{identifier\opt} \terminal{;}\br
+    \terminal{return} expression\opt \terminal{;}\br
+    \terminal{return} braced-init-list \terminal{;}\br
+    \terminal{goto} identifier \terminal{;}\br
+    \terminal{goto} \underline{case-label} \terminal{;}\br
+\end{bnf}
+
+\begin{bnf}
+\nontermdef{selection-statement}\br
+    \terminal{if (} condition \terminal{)} statement\br
+    \terminal{if (} condition \terminal{)} statement \terminal{else} statement\br
+    \terminal{switch (} condition \terminal{)} statement\br
+    \terminal{\underline{explicit} switch (} condition \terminal{) \{} \underline{case-statement-seq} \terminal{\}}\br
+\end{bnf}
+
+\begin{shaded}
+
+\begin{bnf}
+\nontermdef{case-statement-seq}\br
+    case-statement\br
+    case-statement-seq case-statement\br
+\end{bnf}
+
+\begin{bnf}
+\nontermdef{case-statement}\br
+    case-label-seq statement-seq\br
+\end{bnf}
+
+\begin{bnf}
+\nontermdef{case-label-seq}\br
+    attribute-specifier-seq\opt case-label \terminal{:} case-label-seq\opt\br
+\end{bnf}
+
+\end{shaded}
+
+\rSec1[stmt.label]{Labeled statement}
+
+\pnum
+A statement can be labeled.
+
+\begin{bnf}
+\nontermdef{labeled-statement}\br
+    attribute-specifier-seq\opt identifier \terminal{:} statement\br
+    attribute-specifier-seq\opt \underline{case-label} \terminal{:} statement\br
+\end{bnf}
+
+\begin{bnf}
+\nontermdef{\underline{case-label}}\br
+    \terminal{case} constant-expression\br
+    \terminal{default}\br
+\end{bnf}
+
+The optional \grammarterm{attribute-specifier-seq} appertains to the label. An identifier label declares the identifier. The only use of an identifier label is as the target of a \tcode{goto}. The scope of \underline{an identifier} label is the function in which it appears. \underline{Identifier} labels shall not be redeclared within a function. An \underline{identifier} label can be used in a \tcode{goto} statement before its definition. \underline{Identifier} labels have their own name space and do not interfere with other identifiers.
+
+\begin{shaded}
+\pnum
+A \grammarterm{case-label} shall only occur in an enclosing switch statement.  A \grammarterm{case-label} is associated with its smallest enclosing \tcode{switch} statement.
+\end{shaded}
+
+\rSec1[stmt.select]{Selection statements}%
+
+\pnum
+Selection statements choose one of several flows of control.
+
+%
+\begin{bnf}
+\nontermdef{selection-statement}\br
+    \terminal{if (} condition \terminal{)} statement\br
+    \terminal{if (} condition \terminal{)} statement \terminal{else} statement\br
+    \terminal{switch (} condition \terminal{)} statement\br
+    \terminal{\underline{explicit} switch (} condition \terminal{) \{} \underline{case-statement-seq} \terminal{\}}\br
+\end{bnf}
+
+\begin{shaded}
+
+\begin{bnf}
+\nontermdef{case-statement-seq}\br
+    case-statement\br
+    case-statement-seq case-statement\br
+\end{bnf}
+
+\begin{bnf}
+\nontermdef{case-statement}\br
+    case-label-seq statement-seq\br
+\end{bnf}
+
+\begin{bnf}
+\nontermdef{case-label-seq}\br
+    attribute-specifier-seq\opt case-label \terminal{:} case-label-seq\opt\br
+\end{bnf}
+
+\end{shaded}
+
+\begin{bnf}
+\nontermdef{condition}\br
+    expression\br
+    attribute-specifier-seq\opt decl-specifier-seq declarator \terminal{=} initializer-clause\br
+    attribute-specifier-seq\opt decl-specifier-seq declarator braced-init-list
+\end{bnf}
+
+See [dcl.meaning] for the optional \grammarterm{attribute-specifier-seq} in a condition.
+
+\begin{shaded}
+
+In Clause [stmt.stmt], the term \term{substatement} refers to the contained \grammarterm{}{statement} or \grammarterm{}{statement}{s} that appear
+directly in the \grammarterm{selection-statement} syntax notation and to each \grammarterm{case-statement} of an \tcode{explicit switch} statement.
+Each substatement of a \grammarterm{selection-statement} implicitly defines a block scope. If a substatement of a
+\grammarterm{selection-statement} is a single statement, and not a
+\grammarterm{compound-statement} or a \grammarterm{case-statement,} it is as if it was rewritten to be a
+compound-statement containing the original substatement.
+
+\end{shaded}
+
+\enterexample
+
+\begin{codeblock}
+if (x)
+  int i;
+\end{codeblock}
+
+can be equivalently rewritten as
+
+\begin{codeblock}
+if (x) {
+  int i;
+}
+\end{codeblock}
+
+Thus after the \tcode{if} statement, \tcode{i} is no longer in scope.
+\exitexample
+
+\pnum
+\indextext{\idxgram{condition}{s}!rules~for}%
+The rules for \grammarterm{}{condition}{s} apply both to
+\grammarterm{selection-statement}{s} and to the \tcode{for} and \tcode{while}
+statements~(\ref{stmt.iter}). The \grammarterm{}{declarator} shall not
+specify a function or an array. If the \tcode{auto} \nonterminal{type-specifier} appears in
+the \nonterminal{decl-specifier-seq},
+the type of the identifier being declared is deduced from the initializer as described in~\ref{dcl.spec.auto}.
+
+\pnum
+\indextext{statement!declaration in \tcode{if}}%
+\indextext{statement!declaration in \tcode{switch}}%
+A name introduced by a declaration in a \grammarterm{}{condition} (either
+introduced by the \grammarterm{decl-specifier-seq} or the
+\grammarterm{}{declarator} of the condition) is in scope from its point of
+declaration until the end of the substatements controlled by the
+condition. If the name is re-declared in the outermost block of a
+substatement controlled by the condition, the declaration that
+re-declares the name is ill-formed.
+\enterexample
+
+\begin{codeblock}
+if (int x = f()) {
+  int x;            // ill-formed, redeclaration of \tcode{x}
+}
+else {
+  int x;            // ill-formed, redeclaration of \tcode{x}
+}
+\end{codeblock}
+\exitexample
+
+\pnum
+The value of a \grammarterm{}{condition} that is an initialized declaration
+in a statement other than a \tcode{switch} statement is the value of the
+declared variable
+contextually converted to \tcode{bool} (Clause~\ref{conv}).
+If that
+conversion is ill-formed, the program is ill-formed. The value of a
+\grammarterm{}{condition} that is an initialized declaration in a
+\tcode{switch} statement is the value of the declared variable if it has
+integral or enumeration type, or of that variable implicitly converted
+to integral or enumeration type otherwise. The value of a
+\grammarterm{}{condition} that is an expression is the value of the
+expression, contextually converted to \tcode{bool}
+for statements other
+than \tcode{switch};
+if that conversion is ill-formed, the program is
+ill-formed. The value of the condition will be referred to as simply
+``the condition'' where the usage is unambiguous.
+
+\pnum
+If a \grammarterm{}{condition} can be syntactically resolved as either an
+expression or the declaration of a block-scope name, it is interpreted as a
+declaration.
+
+\pnum
+In the \grammarterm{decl-specifier-seq} of a \grammarterm{condition}, each
+\grammarterm{decl-specifier} shall be either a \grammarterm{type-specifier}
+or \tcode{constexpr}.
+
+\rSec2[stmt.switch]{The \tcode{switch} statement}%
+\indextext{statement!\idxcode{switch}}
+
+\pnum
+The \tcode{switch} statement causes control to be transferred to one of
+several statements depending on the value of a condition.
+
+\pnum
+The condition shall be of integral type, enumeration type, or class
+type. If of class type, the
+condition is contextually implicitly converted (Clause~\ref{conv}) to
+an integral or enumeration type. Integral promotions are performed. Any
+statement within the \tcode{switch} statement can be labeled with one or
+more case labels as follows:
+
+\begin{ncbnf}
+\indextext{label!\idxcode{case}}%
+\terminal{case} constant-expression \terminal{:}
+\end{ncbnf}
+
+where the \grammarterm{constant-expression} shall be
+a converted constant expression~(\ref{expr.const}) of the
+promoted type of the switch condition. No two of the case constants in
+the same switch shall have the same value after conversion to the
+promoted type of the switch condition.
+
+\begin{shaded}
+
+\pnum
+An \tcode{explicit switch} statement is a \tcode{switch} statement.  Each \grammarterm{case-statement} within it is considered a single compound statement and defines a block scope.  Each \grammarterm{case-label} in the \grammarterm{case-label-seq} of a \grammarterm{case-statement} is associated with the \tcode{explicit switch} statement and labels the \grammarterm{case-statement}.  If a \grammarterm{case-label} can be syntactically resolved as labeling a \grammarterm{case-statement} or a \grammarterm{labeled-statement}, it is interpreted as labeling a \grammarterm{case-statement}.
+
+\pnum
+The implementation shall analyze each but the last \grammarterm{case-statement} of every \tcode{explicit switch} statement during translation with some predicate $P$.  $P$ must have the following properties:  If it is possible for control to flow off the end of a \grammarterm{case-statement} $C$, $P(C)$ must be true.  If the final statement within a \grammarterm{case-statement} $C$ is a \grammarterm{jump-statement} or a \tcode{throw} expression statement, $P(C)$ must be false.  For each \grammarterm{case-statement} $C$ with neither property, $P(C)$ is unspecified.  If $P(C)$ is true for an analyzed \grammarterm{case-statement}, the program is ill-formed.  \enternote As a quality of implementation issue, $P$ should be false in as many of the unspecified cases as reasonably possible. \exitnote
+
+\end{shaded}
+
+\pnum
+\indextext{label!\idxcode{default}}%
+There shall be at most one label of the form
+
+\begin{codeblock}
+default :
+\end{codeblock}
+
+within a \tcode{switch} statement.
+
+\pnum
+Switch statements can be nested; a \tcode{case} or \tcode{default} label
+is associated with the smallest switch enclosing it.
+
+\pnum
+When the \tcode{switch} statement is executed, its condition is
+evaluated and compared with each case constant.
+\indextext{label!\idxcode{case}}%
+If one of the case constants is equal to the value of the condition,
+control is passed to the statement following the matched case label. If
+no case constant matches the condition, and if there is a
+\indextext{label!\idxcode{default}}%
+\tcode{default} label, control passes to the statement labeled by the
+default label. If no case matches and if there is no \tcode{default}
+then none of the statements in the switch is executed.
+
+\pnum
+\tcode{case} and \tcode{default} labels in themselves do not alter the
+flow of control, which continues unimpeded across such labels. To exit
+from a switch, see \tcode{break},~\ref{stmt.break}.
+\enternote
+Usually, \underline{in a non-explicit switch statement} the substatement that is the subject of a switch is compound
+and \grammarterm{case-labels} appear on the top-level
+statements contained within the (compound) substatement, but this is not
+required.
+\indextext{statement!declaration~in \tcode{switch}}%
+Declarations can appear in the substatement of a
+\grammarterm{switch-statement}.
+\exitnote%
+\indextext{statement!selection|)}
+
+\rSec1[stmt.jump]{Jump statements}
+\indextext{statement!jump}
+
+\pnum
+Jump statements unconditionally transfer control.
+
+\begin{bnf}
+\nontermdef{jump-statement}\br
+    \terminal{break} \underline{identifier\opt} \terminal{;}\br
+    \terminal{continue} \underline{identifier\opt} \terminal{;}\br
+    \terminal{return} expression\opt \terminal{;}\br
+    \terminal{return} braced-init-list \terminal{;}\br
+    \terminal{goto} identifier \terminal{;}\br
+    \terminal{goto} \underline{case-label} \terminal{;}\br
+\end{bnf}
+
+\pnum
+On exit from a scope (however accomplished), objects with automatic storage
+duration~(\ref{basic.stc.auto}) that have been constructed in that scope are destroyed
+in the reverse order of their construction. \enternote For temporaries,
+see~\ref{class.temporary}. \exitnote Transfer out of a loop, out of a block, or back
+past an initialized variable with automatic storage duration involves the
+destruction of objects with automatic storage duration that are in
+scope at the point transferred from but not at the point transferred to.
+(See~\ref{stmt.dcl} for transfers into blocks).
+\enternote
+However, the program can be terminated (by calling
+\indextext{\idxcode{exit}}%
+\indexlibrary{\idxcode{exit}}%
+\tcode{std::exit()} or
+\indextext{\idxcode{abort}}%
+\indexlibrary{\idxcode{abort}}%
+\tcode{std::abort()}~(\ref{support.start.term}), for example) without destroying class objects with automatic storage duration.
+\exitnote
+
+\rSec2[stmt.break]{The \tcode{break} statement}%
+\indextext{statement!\idxcode{break}}
+
+\begin{shaded}
+
+\pnum
+A \tcode{break} statement shall occur only in an \grammarterm{iteration-statement} or a \tcode{switch} statement.  It causes termination of an enclosing \grammarterm{iteration-statement} or \tcode{switch} statement; control passes to the statement following the terminated statement, if any.  If no identifier is given, the terminated statement is the smallest enclosing \grammarterm{iteration-statement} or \tcode{switch} statement.  Otherwise, if there is an enclosing \grammarterm{iteration-statement} or \tcode{switch} statement labeled by the identifier, this statement is the terminated statement.  Otherwise, the program is ill-formed.
+
+\end{shaded}
+
+\rSec2[stmt.cont]{The \tcode{continue} statement}%
+\indextext{statement!\idxcode{continue}}
+
+\begin{shaded}
+
+\pnum
+The \tcode{continue} statement shall occur only in an \grammarterm{iteration-statement} and causes control to pass to the loop-continuation portion of an enclosing \grammarterm{iteration-statement}, that is, to the end of the loop.  If no identifier is given, the \grammarterm{iteration-statement} is the smallest one.  Otherwise, if there is an enclosing \grammarterm{iteration-statement} labeled by the identifier, this is the one.  Otherwise, the program is ill-formed.
+
+\end{shaded}
+
+
+More precisely, in each of the statements
+
+
+
+\begin{minipage}{.30\hsize}
+\begin{codeblock}
+while (foo) {
+  {
+    // ...
+  }
+contin: ;
+}
+\end{codeblock}
+\end{minipage}
+\begin{minipage}{.30\hsize}
+\begin{codeblock}
+do {
+  {
+    // ...
+  }
+contin: ;
+} while (foo);
+\end{codeblock}
+\end{minipage}
+\begin{minipage}{.30\hsize}
+\begin{codeblock}
+for (;;) {
+  {
+    // ...
+  }
+contin: ;
+}
+\end{codeblock}
+\end{minipage}
+
+a \tcode{continue} not contained in an enclosed iteration statement is
+equivalent to \tcode{goto} \tcode{contin}.
+
+\rSec2[stmt.goto]{The \tcode{goto} statement}%
+\indextext{statement!\idxcode{goto}}
+
+\begin{shaded}
+
+\pnum
+The \tcode{goto} statement unconditionally transfers control to a target statement.
+
+\pnum
+If an identifier is specified, the target statement shall be labeled by that identifier and located in the current function.
+
+\pnum
+Otherwise, a \grammarterm{case-label} is specified and the \tcode{goto} statement must be enclosed by a \tcode{switch} statement.  The \grammarterm{case-label} is associated with the smallest enclosing switch statement of the \tcode{goto} statement.  For \tcode{goto case} \grammarterm{constant-expression} - the \grammarterm{constant-expression} is evaluated in the same way as the other \grammarterm{case-labels} associated with that switch statement.  If there is a statement labeled with a \grammarterm{case-label} of the same value and associated with the same switch statement, the target statement is the one so labeled.  Likewise for \tcode{goto default} and a statement labeled by \tcode{default}.  If there is no such target statement, the program is ill-formed. \enternote A \tcode{goto case} statement does not jump to default if the value is not found, cannot jump to an outer switch statement and cannot exit a switch statement. \exitnote
+
+\end{shaded}
+
+\end{document}
